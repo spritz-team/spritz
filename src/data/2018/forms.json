@@ -1,0 +1,241 @@
+{
+    "data": {
+        "Jet": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "jetId",
+                "puId",
+                "rawFactor",
+                "area",
+                "btagDeepFlavB"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "PuppiMET":{
+            "branches": [
+                "pt",
+                "phi"
+            ],
+            "with_name": null
+        },
+        "Electron": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "pdgId",
+                "mvaFall17V2Iso_WP90",
+                "convVeto",
+                "pfRelIso03_all",
+                "cutBased",
+                "sieie",
+                "eInvMinusPInv",
+                "dxy",
+                "dz"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "Muon": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "pdgId",
+                "tightId",
+                "pfRelIso04_all",
+                "dxy",
+                "dz"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "fixedGridRhoFastjetAll": {
+            "branches": [],
+            "with_name": null
+        },
+        "HLT": {
+            "branches": [
+                "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
+                "IsoMu24",
+                "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "Ele32_WPTight_Gsf"
+            ],
+            "with_name": null
+        },
+        "Flag": {
+            "branches": [
+                "goodVertices",
+                "globalSuperTightHalo2016Filter",
+                "HBHENoiseFilter",
+                "HBHENoiseIsoFilter",
+                "EcalDeadCellTriggerPrimitiveFilter",
+                "BadPFMuonFilter",
+                "BadPFMuonDzFilter",
+                "ecalBadCalibFilter",
+                "eeBadScFilter"
+            ],
+            "with_name": null
+        },
+        "run": {
+            "branches": [],
+            "with_name": null
+        },
+        "luminosityBlock": {
+            "branches": [],
+            "with_name": null
+        }
+    },
+    "mc": {
+        "Jet": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "jetId",
+                "puId",
+                "genJetIdx",
+                "rawFactor",
+                "area",
+                "btagDeepFlavB",
+                "hadronFlavour"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "PuppiMET":{
+            "branches": [
+                "pt",
+                "phi"
+            ],
+            "with_name": null
+        },
+        "LHEPart": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "pdgId",
+                "status"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "GenPart": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "pdgId",
+                "status",
+                "genPartIdxMother",
+                "statusFlags"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "GenJet": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "Electron": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "pdgId",
+                "mvaFall17V2Iso_WP90",
+                "convVeto",
+                "pfRelIso03_all",
+                "cutBased",
+                "sieie",
+                "eInvMinusPInv",
+                "dxy",
+                "dz"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "Muon": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "pdgId",
+                "tightId",
+                "pfRelIso04_all",
+                "dxy",
+                "dz",
+                "genPartIdx",
+                "nTrackerLayers"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "fixedGridRhoFastjetAll": {
+            "branches": [],
+            "with_name": null
+        },
+        "HLT": {
+            "branches": [
+                "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
+                "Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8",
+                "IsoMu24",
+                "Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
+                "Ele32_WPTight_Gsf"
+            ],
+            "with_name": null
+        },
+        "Flag": {
+            "branches": [
+                "goodVertices",
+                "globalSuperTightHalo2016Filter",
+                "HBHENoiseFilter",
+                "HBHENoiseIsoFilter",
+                "EcalDeadCellTriggerPrimitiveFilter",
+                "BadPFMuonFilter",
+                "BadPFMuonDzFilter",
+                "ecalBadCalibFilter",
+                "eeBadScFilter"
+            ],
+            "with_name": null
+        },
+        "genWeight": {
+            "branches": [],
+            "with_name": null
+        },
+        "LHEScaleWeight": {
+            "branches": [],
+            "with_name": null
+        },
+        "LHEPdfWeight": {
+            "branches": [],
+            "with_name": null
+        },
+        "Pileup": {
+            "branches": [
+                "nTrueInt"
+            ],
+            "with_name": null
+        },
+        "run": {
+            "branches": [],
+            "with_name": null
+        },
+        "luminosityBlock": {
+            "branches": [],
+            "with_name": null
+        },
+        "event": {
+            "branches": [],
+            "with_name": null
+        }
+    }
+}

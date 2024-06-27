@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spritz"
+description = "Scripts and configurations of various analysis at RECO level in CMS"
+dynamic = ["version"]
+# install all with conda
+dependencies = []
+
+authors = [{ name = "Giorgio Pizzati", email = "giorgio.pizzati@cern.ch" }]
+maintainers = [{ name = "Giorgio Pizzati", email = "giorgio.pizzati@cern.ch" }]
+readme = "README.md"
+
+requires-python = ">=3.10"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spritz"]
+
+# [project.scripts]
+# mp-fileset = "spritz.fileset:main"
+# mp-chunks = "spritz.chunks:main"
+# mp-batch = "spritz.batch:main"
+# mp-merge = "spritz.merge:main"
+# mp-postproc = "spritz.post_processing:main"
+# mp-plot = "spritz.plot:main"
+# mp-cards = "spritz.make_cards:main"
+
+[tool.ruff]
+src = ["src/spritz"]
+line-length = 88
+indent-width = 4
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "W", "F"]
+ignore = []
+
+fixable = ["ALL"]
+unfixable = []
+
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.hatch.version]
+path = "src/spritz/__init__.py"
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/spritz/version.py"

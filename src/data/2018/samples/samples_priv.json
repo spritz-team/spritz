@@ -1,0 +1,23 @@
+{
+    "EWK_LLJJ_MLL-50_MJJ-120": {
+        "nanoAOD": "/EWK_LLJJ_MLL-50_MJJ-120_TuneCP5_13TeV-madgraph-pythia8_dipole/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM",
+        "xsec": "1.719",
+        "kfact": "1.000",
+        "ref": "xsdb"
+    },
+    "EWK_LLJJ_MLL-50_MJJ-120_QCD": {
+        "nanoAOD": "/EWK_LLJJ_MLL-50_MJJ-120_TuneCP5_QCD_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM",
+        "xsec": "0.2102",
+        "kfact": "1.000",
+        "ref": "xsdb"
+    },
+    "DYJetsToLL_0J": {
+        "nanoAOD": "/DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM"
+    },
+    "DYJetsToLL_1J": {
+        "nanoAOD": "/DYJetsToLL_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM"
+    },
+    "DYJetsToLL_2J":  {
+        "nanoAOD": "/DYJetsToLL_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM"
+    }
+}
