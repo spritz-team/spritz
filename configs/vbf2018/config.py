@@ -1,13 +1,27 @@
 # from variables import variables  # noqa: F401
+import os
 import awkward as ak
 import hist
 import numpy as np
 
-from spritz.framework import cmap_pastel, cmap_petroff
+from spritz.framework.framework import cmap_pastel, cmap_petroff
 
 year = "2018"
 lumi = 7066.552169 / 1000
 plot_label = "VBF-Z"
+
+
+dnn_path = "/gwpool/user/gpizzati/dnn_model"
+special_analysis_cfg = {
+    "do_theory_variations": False,
+    "dnn": {
+        "model": f"{dnn_path}/model.onnx",
+        "scaler": f"{dnn_path}/scaler.txt",
+        "cumulative_signal": f"{dnn_path}/cumulative_signal.root",
+        "arrays_type": "np.float64",
+        "output_node": "dense_4",
+    },
+}
 
 subsamples_dy = {
     "hard": "events.hard",

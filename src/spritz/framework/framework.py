@@ -9,17 +9,28 @@ from copy import deepcopy
 
 import awkward as ak
 import cloudpickle
-import dask
 import numpy as np
 import uproot
 
-path_fw = os.getenv("SPRITZ_PATH")
-assert path_fw is not None
+
+def get_fw_path():
+    path_fw = os.getenv("SPRITZ_PATH")
+    if path_fw is None:
+        raise Exception("Could not find SPRITZ_PATH variable, remember to source!")
+    return path_fw
+
+
+get_fw_path()
+
+
+def get_config_path():
+    path = os.path.abspath(".")
+    print("Working in analysis path:", path)
+    return path
 
 
 def get_analysis_dict():
-    path = os.path.abspath(".")
-    print("Working in analysis path:", path)
+    path = get_config_path()
     sys.path.insert(0, path)
 
     exec("import config as analysis_cfg", globals(), globals())

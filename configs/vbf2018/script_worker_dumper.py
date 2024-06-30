@@ -2,11 +2,8 @@ import gc
 import json
 import sys
 import traceback as tb
-import zlib
 
 import awkward as ak
-import cloudpickle
-import coffea
 import correctionlib
 import hist
 import numpy as np
@@ -15,31 +12,35 @@ import uproot
 import vector
 from coffea.lumi_tools import LumiMask
 
-import variation as variation_module
-from framework import big_process, path_fw, read_chunks, write_chunks
-from modules.basic_selections import lumi_mask, pass_flags, pass_trigger
-from modules.btag_sf import btag_sf
-from modules.dnn_evaluator import dnn_evaluator, dnn_transform
-from modules.gen_analysis import gen_analysis
-from modules.jet_sel import cleanJet, jetSel
-from modules.jme import correct_jets, getJetCorrections
-from modules.lepton_sel import createLepton, leptonSel
-from modules.lepton_sf import lepton_sf
-from modules.prompt_gen import prompt_gen_match_leptons
-from modules.puid_sf import puid_sf
-from modules.puweight import puweight_sf
-from modules.rochester import correctRochester, getRochester
-from modules.theory_unc import theory_unc
-from modules.trigger_sf import trigger_sf
+import spritz.framework.variation as variation_module
+from spritz.framework.framework import (
+    big_process,
+    get_fw_path,
+    read_chunks,
+    write_chunks,
+    get_analysis_dict,
+)
+from spritz.modules.basic_selections import lumi_mask, pass_flags, pass_trigger
+from spritz.modules.btag_sf import btag_sf
+from spritz.modules.dnn_evaluator import dnn_evaluator, dnn_transform
+from spritz.modules.gen_analysis import gen_analysis
+from spritz.modules.jet_sel import cleanJet, jetSel
+from spritz.modules.jme import correct_jets, getJetCorrections
+from spritz.modules.lepton_sel import createLepton, leptonSel
+from spritz.modules.lepton_sf import lepton_sf
+from spritz.modules.prompt_gen import prompt_gen_match_leptons
+from spritz.modules.puid_sf import puid_sf
+from spritz.modules.puweight import puweight_sf
+from spritz.modules.rochester import correctRochester, getRochester
+from spritz.modules.theory_unc import theory_unc
+from spritz.modules.trigger_sf import trigger_sf
 
 vector.register_awkward()
 
 print("uproot version", uproot.__version__)
 print("awkward version", ak.__version__)
 
-print("coffea version", coffea.__version__)
-
-
+path_fw = get_fw_path()
 with open(f"{path_fw}/data/cfg.json") as file:
     txt = file.read()
     txt = txt.replace("RPLME_PATH_FW", path_fw)
@@ -52,11 +53,13 @@ ceval_lepton_sf = correctionlib.CorrectionSet.from_file(cfg["leptonSF"])
 jec_stack = getJetCorrections(cfg)
 rochester = getRochester(cfg)
 
+analysis_cfg = get_analysis_dict()
+special_analysis_cfg = analysis_cfg["special_analysis_cfg"]
 sess_opt = ort.SessionOptions()
 sess_opt.intra_op_num_threads = 1
 sess_opt.inter_op_num_threads = 1
-onnx_session = ort.InferenceSession(cfg["dnn"]["model"], sess_opt)
-dnn_t = dnn_transform(cfg["dnn"]["cumulative_signal"])
+onnx_session = ort.InferenceSession(special_analysis_cfg["dnn"]["model"], sess_opt)
+dnn_t = dnn_transform(special_analysis_cfg["dnn"]["cumulative_signal"])
 
 
 def ensure_not_none(arr):
@@ -155,7 +158,9 @@ def process(events, **kwargs):
         events, variations = btag_sf(events, variations, ceval_btag, cfg)
 
         # Theory unc.
-        doTheoryVariations = cfg.get("do_theory_variations", True) and dataset == "Zjj"
+        doTheoryVariations = (
+            special_analysis_cfg.get("do_theory_variations", True) and dataset == "Zjj"
+        )
         if doTheoryVariations:
             events, variations = theory_unc(events, variations)
 
