@@ -2,6 +2,7 @@
 
 
 ### Steps
+0. Edit and source start.sh to setup your python environment (mamba, venv or LCG release)
 1. get_data.py: get all data needed for a year / era
 2. fileset.py: get the list of all files (replicas and nevents) for each dataset defined in `data/{year}/samples/active_samples.py` (user has to write this file)
 3. create a config directory with a config.py and a script_worker.py
