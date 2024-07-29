@@ -1,16 +1,12 @@
 import json
-import os
 import random
 from math import ceil
 
-from analysis.config import datasets
-from framework import path_fw, write_chunks
+from spritz.framework.framework import write_chunks, get_analysis_dict
 
 
 def split_chunks(num_entries):
-    # max_events = 200_000_000
     chunksize = 100_000
-    # max_events = min(num_entries, max_events)
     nIterations = ceil(num_entries / chunksize)
     file_results = []
     for i in range(nIterations):
@@ -23,12 +19,11 @@ def split_chunks(num_entries):
 
 
 def get_files(datasets):
-    with open(path_fw + "/data/files_all2.json", "r") as file:
+    with open("data/fileset.json", "r") as file:
         files = json.load(file)
 
     for dataset in datasets:
         datasets[dataset]["files"] = files[datasets[dataset]["files"]]["files"]
-        # print(datasets[dataset]["files"])
     return datasets
 
 
@@ -69,8 +64,13 @@ def create_chunks(datasets, max_chunks=None):
     return chunks
 
 
-if __name__ == "__main__":
+def main():
+    datasets = get_analysis_dict()["datasets"]
     datasets = get_files(datasets)
     chunks = create_chunks(datasets, max_chunks=None)
     print("Now got", len(chunks), "chunks")
     write_chunks(chunks, "data/chunks.pkl")
+
+
+if __name__ == "__main__":
+    main()

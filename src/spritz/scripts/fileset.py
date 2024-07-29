@@ -1,13 +1,13 @@
 import json
 import os
-import random
 import sys
 
-import dask
-import uproot
 from coffea.dataset_tools import rucio_utils
 from dbs.apis.dbsClient import DbsApi
-from spritz.framework import path_fw
+from spritz.framework.framework import get_fw_path
+
+
+path_fw = get_fw_path()
 
 
 def get_files(year):
@@ -24,7 +24,7 @@ def get_files(year):
 
     with open(f"{path_fw}/data/{year}/samples/samples.json") as file:
         Samples = json.load(file)
-        Samples = {k: v for k, v in Samples["samples"].items() if k in active_samples}  # noqa: F821
+        Samples = {k: v for k, v in Samples["samples"].items() if k in active_samples}  # noqa: F821 # type: ignore
 
     files = {}
     for sampleName in Samples:
@@ -33,7 +33,7 @@ def get_files(year):
     return files
 
 
-if __name__ == "__main__":
+def main():
     kwargs = {
         "bad_sites": [
             # "ts.infn",
@@ -95,5 +95,10 @@ if __name__ == "__main__":
             nevents = right_file[0]["event_count"]
             files[dname]["files"].append({"path": replicas, "nevents": nevents})
 
-    with open("data/files_all3.json", "w") as file:
+    os.makedirs("data", exist_ok=True)
+    with open("data/fileset.json", "w") as file:
         json.dump(files, file, indent=2)
+
+
+if __name__ == "__main__":
+    main()

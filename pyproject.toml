@@ -18,10 +18,10 @@ requires-python = ">=3.10"
 [tool.hatch.build.targets.wheel]
 packages = ["src/spritz"]
 
-# [project.scripts]
-# mp-fileset = "spritz.fileset:main"
-# mp-chunks = "spritz.chunks:main"
-# mp-batch = "spritz.batch:main"
+[project.scripts]
+spritz-fileset = "spritz.scripts.fileset:main"
+spritz-chunks = "spritz.scripts.chunks:main"
+spritz-batch = "spritz.scripts.batch:main"
 # mp-merge = "spritz.merge:main"
 # mp-postproc = "spritz.post_processing:main"
 # mp-plot = "spritz.plot:main"

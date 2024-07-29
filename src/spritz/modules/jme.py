@@ -2,7 +2,7 @@ import awkward as ak
 import numpy as np
 from coffea.jetmet_tools import JECStack, CorrectedJetsFactory
 from coffea.lookup_tools import extractor
-import variation as variation_module
+import spritz.framework.variation as variation_module
 
 
 def getJetCorrections(cfg):

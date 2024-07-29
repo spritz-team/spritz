@@ -3,3 +3,8 @@ src/data/samples_latinos**
 **png
 **__pycache__
 special_start.sh
+src/spritz/__version__.py
+src/spritz/version.py
+**condor
+configs/*/data**
+**.sites_map.json

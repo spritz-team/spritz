@@ -1,6 +1,6 @@
 import awkward as ak
 from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
-import variation
+import spritz.framework.variation as variation
 from typing import NewType
 
 correctionlib_evaluator = NewType("correctionlib_evaluator", any)

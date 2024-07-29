@@ -9,3 +9,5 @@ SPECIAL_SOURCE=${SPRITZ_PATH}/special_start.sh
 if [ -f "$SPECIAL_SOURCE" ]; then
     source $SPECIAL_SOURCE
 fi
+
+export PYTHONPATH=${SPRITZ_PATH}:$PYTHONPATH

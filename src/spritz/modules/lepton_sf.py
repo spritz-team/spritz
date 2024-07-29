@@ -1,7 +1,7 @@
 from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 import awkward as ak
 import numpy as np
-import variation as variation_module
+import spritz.framework.variation as variation_module
 
 
 def lepton_sf(events, variations, ceval_lepton_sf, cfg):

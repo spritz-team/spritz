@@ -9,9 +9,10 @@ from spritz.framework.framework import cmap_pastel, cmap_petroff
 year = "2018"
 lumi = 7066.552169 / 1000
 plot_label = "VBF-Z"
+njobs = 500
 
 
-dnn_path = "/gwpool/user/gpizzati/dnn_model"
+dnn_path = '/gwpool/users/gpizzati/test_processor/my_processor/notebooks/output_model'
 special_analysis_cfg = {
     "do_theory_variations": False,
     "dnn": {

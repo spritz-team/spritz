@@ -3,28 +3,22 @@ import os
 import subprocess
 import sys  # noqa: F401
 
-from framework import path_fw, read_chunks, write_chunks
+from spritz.framework.framework import (
+    get_fw_path,
+    read_chunks,
+    write_chunks,
+    get_analysis_dict,
+    # dump_analysis_dict,
+)
 
 
-def preprocess_chunks():
-    with open("data/common/forms.json", "r") as file:
+def preprocess_chunks(year):
+    with open(f"{get_fw_path()}/data/{year}/forms.json", "r") as file:
         forms = json.load(file)
     new_chunks = read_chunks("data/chunks.pkl")
 
     for i, chunk in enumerate(new_chunks):
         new_chunks[i]["data"]["read_form"] = forms[chunk["data"]["read_form"]]
-        # dset = chunk["dataset"]
-        # if chunk.get("is_data", False):
-        #     new_chunks[i]["weight"] = 1
-        # elif "Zjj" == dset:
-        #     new_chunks[i]["weight"] = 8
-        # elif "DY" in dset:
-        #     new_chunks[i]["weight"] = 8
-        # elif "top" in dset.lower() or "ttto" in dset.lower() or "st_s" in dset.lower():
-        #     new_chunks[i]["weight"] = 3
-        # else:
-        #     print("No weight", dset)
-        #     new_chunks[i]["weight"] = 1
     return new_chunks
 
 
@@ -48,6 +42,8 @@ def split_chunks(chunks, n):
 
 def submit(
     new_chunks,
+    path_an,
+    an_dict,
     njobs=500,
     clean_up=True,
     start=0,
@@ -70,14 +66,12 @@ def submit(
 
     jobs = split_chunks(new_chunks, njobs)
     print(len(jobs))
-    # sys.exit()
+
     folders = []
-    pathPython = os.path.abspath(".")
-    pathResults = "/gwdata/users/gpizzati/condor_processor"
 
     if clean_up:
         proc = subprocess.Popen(
-            f"rm -r condor_backup {pathResults}/results_backup; mv condor condor_backup; mv {pathResults}/results {pathResults}/results_backup",
+            "rm -r condor_backup; mv condor condor_backup",
             shell=True,
         )
         proc.wait()
@@ -93,22 +87,10 @@ def submit(
     proc = subprocess.Popen(f"cp {script_name} condor/", shell=True)
     proc.wait()
 
+
     txtsh = "#!/bin/bash\n"
-    # txtsh += "export X509_USER_PROXY=/gwpool/users/gpizzati/.proxy\n"
-
-    # txtsh += "source /gwpool/users/gpizzati/mambaforge/etc/profile.d/conda.sh\n"
-    # txtsh += "source /gwpool/users/gpizzati/mambaforge/etc/profile.d/mamba.sh\n"
-    # txtsh += "mamba activate test_uproot\n"
-
-    # txtsh += f"export PYTHONPATH={pathPython}:$PYTHONPATH\n"
-    txtsh += f"source {path_fw}/setup.sh\n"
-    # txtsh += "echo 'which python'\n"
-    # txtsh += "which python\n"
-    txtsh += f"time python {script_name}\n"
-    # txtsh += f"cp results.pkl {pathResults}/results/results_$1.pkl\n"
-    # txtsh += f"cp results.root {pathResults}/results/results_$1.root\n"
-    # txtsh += f"ls {pathResults}/results/results_$1.pkl\n"
-    # txtsh += f"ls {pathResults}/results/results_$1.root\n"
+    txtsh += f"source {get_fw_path()}/start.sh\n"
+    txtsh += f"time python {script_name} {path_an}\n"
 
     with open("condor/run.sh", "w") as file:
         file.write(txtsh)
@@ -118,7 +100,8 @@ def submit(
     txtjdl += "arguments = $(Folder)\n"
 
     txtjdl += "should_transfer_files = YES\n"
-    txtjdl += f"transfer_input_files = $(Folder)/chunks_job.pkl, {script_name}, ../data/cfg.json\n"
+    txtjdl += "transfer_input_files = $(Folder)/chunks_job.pkl, "
+    txtjdl += f" {script_name}, {get_fw_path()}/data/{an_dict['year']}/cfg.json\n"
     txtjdl += 'transfer_output_remaps = "results.pkl = $(Folder)/chunks_job.pkl"\n'
     txtjdl += "output = $(Folder)/out.txt\n"
     txtjdl += "error  = $(Folder)/err.txt\n"
@@ -139,24 +122,34 @@ def submit(
         file.write(txtjdl)
 
     if dryRun:
-        command = f"mkdir -p {pathResults}/results; cd condor/; chmod +x run.sh; cd -"
+        command = "cd condor/; chmod +x run.sh; cd -"
     else:
-        command = f"mkdir -p {pathResults}/results; cd condor/; chmod +x run.sh; condor_submit submit.jdl; cd -"
+        command = "cd condor/; chmod +x run.sh; condor_submit submit.jdl; cd -"
     proc = subprocess.Popen(command, shell=True)
     proc.wait()
 
 
-if __name__ == "__main__":
+def main():
     start = 0
-    chunks = preprocess_chunks()
+    path_an = os.path.abspath(".")
+    an_dict = get_analysis_dict()
+    chunks = preprocess_chunks(an_dict["year"])
     dryRun = False
+
     if len(sys.argv) > 1:
         dryRun = sys.argv[1] == "-dr"
+
     submit(
         chunks,
-        njobs=500,
+        path_an,
+        an_dict,
+        njobs=an_dict['njobs'],
         clean_up=True,
         start=start,
         dryRun=dryRun,
         script_name="script_worker_dumper.py",
     )
+
+
+if __name__ == "__main__":
+    main()

@@ -1,6 +1,6 @@
 from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 import awkward as ak
-import variation as variation_module
+import spritz.framework.variation as variation_module
 
 btag_base_var = [
     "lf",

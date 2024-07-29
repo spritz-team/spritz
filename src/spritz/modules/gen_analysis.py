@@ -1,6 +1,6 @@
 import awkward as ak
 
-from modules.jet_sel import goodJet_func
+from spritz.modules.jet_sel import goodJet_func
 
 
 def cuts(events):

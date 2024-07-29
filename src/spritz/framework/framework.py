@@ -29,8 +29,9 @@ def get_config_path():
     return path
 
 
-def get_analysis_dict():
-    path = get_config_path()
+def get_analysis_dict(path=None):
+    if not path:
+        path = get_config_path()
     sys.path.insert(0, path)
 
     exec("import config as analysis_cfg", globals(), globals())

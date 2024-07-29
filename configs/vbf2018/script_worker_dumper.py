@@ -41,7 +41,7 @@ print("uproot version", uproot.__version__)
 print("awkward version", ak.__version__)
 
 path_fw = get_fw_path()
-with open(f"{path_fw}/data/cfg.json") as file:
+with open("cfg.json") as file:
     txt = file.read()
     txt = txt.replace("RPLME_PATH_FW", path_fw)
     cfg = json.loads(txt)
@@ -53,7 +53,8 @@ ceval_lepton_sf = correctionlib.CorrectionSet.from_file(cfg["leptonSF"])
 jec_stack = getJetCorrections(cfg)
 rochester = getRochester(cfg)
 
-analysis_cfg = get_analysis_dict()
+analysis_path = sys.argv[1]
+analysis_cfg = get_analysis_dict(analysis_path)
 special_analysis_cfg = analysis_cfg["special_analysis_cfg"]
 sess_opt = ort.SessionOptions()
 sess_opt.intra_op_num_threads = 1
