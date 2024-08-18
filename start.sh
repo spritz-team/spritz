@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export X509_USER_PROXY=$HOME/.proxy
 XRD_RUNFORKHANDLER=1
 
 export SPRITZ_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )

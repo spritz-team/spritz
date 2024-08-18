@@ -2,6 +2,7 @@ import gc
 import json
 import sys
 import traceback as tb
+from copy import deepcopy
 
 import awkward as ak
 import correctionlib
@@ -59,8 +60,9 @@ special_analysis_cfg = analysis_cfg["special_analysis_cfg"]
 sess_opt = ort.SessionOptions()
 sess_opt.intra_op_num_threads = 1
 sess_opt.inter_op_num_threads = 1
-onnx_session = ort.InferenceSession(special_analysis_cfg["dnn"]["model"], sess_opt)
-dnn_t = dnn_transform(special_analysis_cfg["dnn"]["cumulative_signal"])
+dnn_cfg = special_analysis_cfg["dnn"]
+onnx_session = ort.InferenceSession(dnn_cfg["model"], sess_opt)
+dnn_t = dnn_transform(dnn_cfg["cumulative_signal"])
 
 
 def ensure_not_none(arr):
@@ -169,7 +171,9 @@ def process(events, **kwargs):
     # categories = ["ee", "mm"]
     # axis = get_axis()
     # variables = get_variables()
-    from analysis.config import regions, variables
+    #from analysis.config import regions, variables
+    regions = deepcopy(analysis_cfg['regions'])
+    variables = deepcopy(analysis_cfg['variables'])
 
     # FIXME removing all variations
     variations.variations_dict = {
@@ -382,7 +386,7 @@ def process(events, **kwargs):
             onnx_session,
             events,
             dnn_t,
-            cfg,
+            dnn_cfg,
         )
 
         # print("DNN", ak.min(events.dnn), ak.max(events.dnn))

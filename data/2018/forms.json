@@ -137,6 +137,19 @@
             ],
             "with_name": "Momentum4D"
         },
+        "GenDressedLepton": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "pdgId",
+                "isPrompt",
+                "genPartIdxMother",
+                "statusFlags"
+            ],
+            "with_name": "Momentum4D"
+        },
         "GenJet": {
             "branches": [
                 "pt",

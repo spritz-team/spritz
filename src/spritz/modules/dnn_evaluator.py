@@ -14,9 +14,9 @@ def dnn_transform(cumulative_signal_path):
     return dnn_t
 
 
-def dnn_evaluator(sess, events, dnn_t, cfg):
-    scaler_path = cfg["dnn"]["scaler"]
-    arr_type = eval(cfg["dnn"]["arrays_type"])
+def dnn_evaluator(sess, events, dnn_t, dnn_cfg):
+    scaler_path = dnn_cfg["scaler"]
+    arr_type = eval(dnn_cfg["arrays_type"])
     with open(scaler_path) as file:
         scaler = file.read().split("\n")
         scaler = list(filter(lambda k: k != "", scaler))
@@ -38,7 +38,7 @@ def dnn_evaluator(sess, events, dnn_t, cfg):
     # arr = sess.run(["dense_6"], {"dense_input": input1})[0].reshape(-1)
     # arr = np.where(arr <= 0.0, 1e-6, arr)
     # arr = np.where(arr >= 1.0, 1 - 1e-6, arr)
-    arr = sess.run([cfg["dnn"]["output_node"]], {"dense_input": input1})[0]
+    arr = sess.run([dnn_cfg["output_node"]], {"dense_input": input1})[0]
     arr = arr.flatten()
     arr = dnn_t(arr)
 
