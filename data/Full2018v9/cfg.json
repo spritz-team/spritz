@@ -1,0 +1,28 @@
+{
+  "year": "2018",
+  "era": "Full2018v9",
+  "flags": [
+    "goodVertices",
+    "globalSuperTightHalo2016Filter",
+    "HBHENoiseFilter",
+    "HBHENoiseIsoFilter",
+    "EcalDeadCellTriggerPrimitiveFilter",
+    "BadPFMuonFilter",
+    "BadPFMuonDzFilter",
+    "ecalBadCalibFilter",
+    "eeBadScFilter"
+  ],
+  "eleWP": "mvaFall17V2Iso_WP90",
+  "muWP": "cut_Tight_HWWW",
+  "leptonSF": "RPLME_PATH_FW/data/Full2018v9/clib/lepton_sf.json.gz",
+  "puWeightsKey": "Collisions18_UltraLegacy_goldenJSON",
+  "do_theory_variations": true,
+  "puidSF": "RPLME_PATH_FW/data/Full2018v9/clib/jmar.json.gz",
+  "btagSF": "RPLME_PATH_FW/data/Full2018v9/clib/btagging.json.gz",
+  "puWeights": "RPLME_PATH_FW/data/Full2018v9/clib/puWeights.json.gz",
+  "lumiMask": "RPLME_PATH_FW/data/Full2018v9/lumimasks/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",
+  "rochester_file": "RPLME_PATH_FW/data/Full2018v9/rochester/RoccoR2018UL.txt",
+  "btagLoose": 0.0490,
+  "btagMedium": 0.2783,
+  "btagTight": 0.7100
+}

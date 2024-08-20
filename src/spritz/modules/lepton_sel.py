@@ -1,5 +1,5 @@
 import awkward as ak
-from data.common import LeptonSel
+from data.common import LeptonSel_cfg
 
 
 def createLepton(events):
@@ -38,8 +38,8 @@ def createLepton(events):
 
 
 def leptonSel(events):
-    ElectronWP = LeptonSel.ElectronWP["Full2018v9"]
-    MuonWP = LeptonSel.MuonWP["Full2018v9"]
+    ElectronWP = LeptonSel_cfg.ElectronWP["Full2018v9"]
+    MuonWP = LeptonSel_cfg.MuonWP["Full2018v9"]
 
     ele_mask = abs(events.Lepton.pdgId) == 11
     mu_mask = abs(events.Lepton.pdgId) == 13

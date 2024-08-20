@@ -21,6 +21,8 @@ from spritz.framework.framework import (
     write_chunks,
     get_analysis_dict,
 )
+
+from spritz.modules.run_assign import assign_run
 from spritz.modules.basic_selections import lumi_mask, pass_flags, pass_trigger
 from spritz.modules.btag_sf import btag_sf
 from spritz.modules.dnn_evaluator import dnn_evaluator, dnn_transform
@@ -51,6 +53,7 @@ ceval_puid = correctionlib.CorrectionSet.from_file(cfg["puidSF"])
 ceval_btag = correctionlib.CorrectionSet.from_file(cfg["btagSF"])
 ceval_puWeight = correctionlib.CorrectionSet.from_file(cfg["puWeights"])
 ceval_lepton_sf = correctionlib.CorrectionSet.from_file(cfg["leptonSF"])
+ceval_assign_run = correctionlib.CorrectionSet.from_file(cfg["run_to_era"])
 jec_stack = getJetCorrections(cfg)
 rochester = getRochester(cfg)
 
@@ -96,7 +99,8 @@ def process(events, **kwargs):
     nevents = ak.num(events.weight, axis=0)
 
     # pass trigger and flags
-    events = pass_trigger(events, cfg["tgr_data"])
+    events = assign_run(events, isData, cfg, ceval_assign_run)
+    events = pass_trigger(events, cfg['ERA'])
     events = pass_flags(events, cfg["flags"])
 
     events = events[events.pass_flags & events.pass_trigger]

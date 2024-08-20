@@ -1,13 +1,23 @@
 import awkward as ak
+from data.common.TrigMaker_cfg import Trigger
 
 
-def pass_trigger(events, tgr_data):
-    events["pass_trigger"] = ak.ones_like(events.weight) == 0.0  # all False
-    for key, values in tgr_data.items():
+def pass_trigger(events, ERA):
+    keys = ["EleMu", "SingleEle", "DoubleEle", "SingleMu", "DoubleMu"]
+    for key in keys:
         events[key] = ak.ones_like(events.weight) == 0.0  # all False
-        for val in values:
-            events[key] = events[key] | events.HLT[val]
-        events["pass_trigger"] = events["pass_trigger"] | events[key]
+
+    for era in Trigger[ERA]:
+        for key in keys:
+            tmp = ak.ones_like(events.weight) == 0.0  # all False
+            for val in Trigger[ERA][era]["MC"][key]:
+                tmp = tmp | events.HLT[val]
+            events[key] = events[key] | (events.run_period == era) & tmp
+
+    pass_trigger = ak.ones_like(events.weight) == 0.0  # all False
+    for key in keys:
+        pass_trigger = pass_trigger | events[key]
+    events["pass_trigger"] = pass_trigger
     return events
 
 
