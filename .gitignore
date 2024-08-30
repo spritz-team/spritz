@@ -8,4 +8,4 @@ src/spritz/version.py
 **condor
 configs/*/data**
 **.sites_map.json
-**.ipynb_checkpoints
+.ipynb_checkpoints

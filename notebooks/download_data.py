@@ -34,18 +34,13 @@ for ERA in config_eras:
     def setup_cfg():
         # Setup all the needed data
 
+        year_maps = {
+            "Full2016v9HIPM": "2016",
+            "Full2016v9noHIPM": "2016",
+            "Full2017v9": "2017",
+            "Full2018v9": "2018",
+        }
         cfg = {
-            "year": "2018",
-            "tgr_data": {
-                "EleMu": [
-                    "Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL",
-                    "Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
-                ],
-                "DoubleMu": ["Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8"],
-                "SingleMu": ["IsoMu24"],
-                "DoubleEle": ["Ele23_Ele12_CaloIdL_TrackIdL_IsoVL"],
-                "SingleEle": ["Ele32_WPTight_Gsf"],
-            },
             "flags": [
                 "goodVertices",
                 "globalSuperTightHalo2016Filter",
@@ -59,119 +54,159 @@ for ERA in config_eras:
             ],
             "eleWP": "mvaFall17V2Iso_WP90",
             "muWP": "cut_Tight_HWWW",
-            "leptonSF": "/gwpool/users/gpizzati/test_processor/my_processor/data/2018/lepton_sf.json.gz",
-            "puWeightsKey": "Collisions18_UltraLegacy_goldenJSON",
+            "leptonSF": f"RPLME_PATH_FW/data/{ERA}/lepton_sf.json.gz",
+            "puWeightsKey": f"Collisions{int(year_maps[ERA])-2000}_UltraLegacy_goldenJSON",
             "do_theory_variations": False,
-            "btagLoose": 0.0490,
-            "btagMedium": 0.2783,
-            "btagTight": 0.7100,
+        }
+        cfg["year"] = year_maps[ERA]
+
+        btag_wps = {
+            "Full2016v9HIPM": {
+                "btagLoose": 0.0508,
+                "btagMedium": 0.2598,
+                "btagTight": 0.6502,
+            },
+            "Full2016v9noHIPM": {
+                "btagLoose": 0.0480,
+                "btagMedium": 0.2489,
+                "btagTight": 0.6377,
+            },
+            "Full2017v9": {
+                "btagLoose": 0.0532,
+                "btagMedium": 0.3040,
+                "btagTight": 0.7476,
+            },
+            "Full2018v9": {
+                "btagLoose": 0.0490,
+                "btagMedium": 0.2783,
+                "btagTight": 0.7100,
+            },
         }
 
-        basedir = os.path.abspath(".") + "/data/2018/jme/"
-        os.makedirs(basedir, exist_ok=True)
+        cfg["bTag"] = btag_wps[ERA]
 
-        jet_object = "AK4PFchs"
-        production_jec = "Summer19UL18_V5_MC"
-        production_jer = "Summer19UL18_JRV2_MC"
-        base_url_jec = (
-            "https://raw.githubusercontent.com/cms-jet/JECDatabase/master/textFiles/"
-        )
-        base_url_jer = (
-            "https://raw.githubusercontent.com/cms-jet/JRDatabase/master/textFiles/"
-        )
+        # basedir = os.path.abspath(".") + "/data/2018/jme/"
+        # os.makedirs(basedir, exist_ok=True)
 
-        files = ["L1FastJet", "L2Relative", "L3Absolute", "L2L3Residual"]
-        files = [production_jec + "_" + file + "_" + jet_object for file in files] + [
-            f"Regrouped_{production_jec}_UncertaintySources" + "_" + jet_object
-        ]
-        postfixes = 4 * ["jec"] + ["junc"]
-        urls = [base_url_jec + production_jec + "/" + file + ".txt" for file in files]
+        # jet_object = "AK4PFchs"
+        # production_jec = "Summer19UL18_V5_MC"
+        # production_jer = "Summer19UL18_JRV2_MC"
+        # base_url_jec = (
+        #     "https://raw.githubusercontent.com/cms-jet/JECDatabase/master/textFiles/"
+        # )
+        # base_url_jer = (
+        #     "https://raw.githubusercontent.com/cms-jet/JRDatabase/master/textFiles/"
+        # )
 
-        files_jer = [
-            production_jer + "_PtResolution_" + jet_object,
-            production_jer + "_SF_" + jet_object,
-        ]
-        postfixes += ["jr", "jrsf"]
-        urls += [
-            base_url_jer + production_jer + "/" + file + ".txt" for file in files_jer
-        ]
-        files += files_jer
-        print(files)
+        # files = ["L1FastJet", "L2Relative", "L3Absolute", "L2L3Residual"]
+        # files = [production_jec + "_" + file + "_" + jet_object for file in files] + [
+        #     f"Regrouped_{production_jec}_UncertaintySources" + "_" + jet_object
+        # ]
+        # postfixes = 4 * ["jec"] + ["junc"]
+        # urls = [base_url_jec + production_jec + "/" + file + ".txt" for file in files]
 
-        print(urls)
+        # files_jer = [
+        #     production_jer + "_PtResolution_" + jet_object,
+        #     production_jer + "_SF_" + jet_object,
+        # ]
+        # postfixes += ["jr", "jrsf"]
+        # urls += [
+        #     base_url_jer + production_jer + "/" + file + ".txt" for file in files_jer
+        # ]
+        # files += files_jer
+        # print(files)
 
-        paths = []
-        jec_names = []
-        junc = 0
-        for file, url, postfix in zip(files, urls, postfixes):
-            new_filename = f"{file}.{postfix}.txt"
-            if postfix == "junc":
-                junc = file
-            # print(url)
+        # print(urls)
 
-            with open(basedir + new_filename, "w") as f:
-                f.write(requests.get(url).text)
-            paths.append(basedir + new_filename)
-            jec_names.append(file)
+        # paths = []
+        # jec_names = []
+        # junc = 0
+        # for file, url, postfix in zip(files, urls, postfixes):
+        #     new_filename = f"{file}.{postfix}.txt"
+        #     if postfix == "junc":
+        #         junc = file
+        #     # print(url)
 
-        print(paths)
-        print(jec_names)
-        print(junc)
-        print("\n\n")
-        jme = {"jec_stack_names": jec_names, "jec_stack_paths": paths, "junc": junc}
+        #     with open(basedir + new_filename, "w") as f:
+        #         f.write(requests.get(url).text)
+        #     paths.append(basedir + new_filename)
+        #     jec_names.append(file)
 
-        cfg["JME"] = jme
+        # print(paths)
+        # print(jec_names)
+        # print(junc)
+        # print("\n\n")
+        # jme = {"jec_stack_names": jec_names, "jec_stack_paths": paths, "junc": junc}
+
+        # cfg["JME"] = jme
+        year_maps = {
+            "Full2016v9HIPM": "2016preVFP_UL",
+            "Full2016v9noHIPM": "2016postVFP_UL",
+            "Full2017v9": "2017_UL",
+            "Full2018v9": "2018_UL",
+        }
 
         files_to_copy = [
-            "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/2018_UL/jmar.json.gz",
-            "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2018_UL/btagging.json.gz",
-            "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2018_UL/puWeights.json.gz",
+            "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/jer_smear.json.gz",
+            f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/{year_maps[ERA]}/jet_jerc.json.gz",
+            f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/{year_maps[ERA]}/jmar.json.gz",
+            f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/{year_maps[ERA]}/btagging.json.gz",
+            f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/{year_maps[ERA]}/puWeights.json.gz",
         ]
-        keys = ["puidSF", "btagSF", "puWeights"]
+        jsonpog_path = '/Users/giorgiopizzati/Downloads/jsonpog-integration-master/POG/'
+        files_to_copy = list(map(lambda k: jsonpog_path + k.split('POG')[-1], files_to_copy))
+        keys = ["jer_smear", "jet_jerc", "puidSF", "btagSF", "puWeights"]
 
-        basedir = os.path.abspath(".") + "/data/2018/clib/"
+        basedir = f"../data/{ERA}/clib/"
         os.makedirs(basedir, exist_ok=True)
 
         for key, file_to_copy in zip(keys, files_to_copy):
+            # for file_to_copy in files_to_copy:
             fname = file_to_copy.split("/")[-1]
-            cfg[key] = f"{basedir}{fname}"
+            cfg[key] = f"RPLME_PATH_FW/{ERA}/clib/{fname}"
             proc = subprocess.Popen(f"cp {file_to_copy} {basedir}", shell=True)
             proc.wait()
 
-        files_to_download = [
-            "https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",
-        ]
+        files_to_download = {
+            "Full2016v9noHIPM": "https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt",
+            "Full2016v9HIPM": "https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt",
+            "Full2017v9": "https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt",
+            "Full2018v9": "https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",
+        }
         keys = ["lumiMask"]
 
-        basedir = os.path.abspath(".") + "/data/2018/lumimasks/"
+        basedir = f"../data/{ERA}/lumimasks/"
         os.makedirs(basedir, exist_ok=True)
 
-        for key, file_to_download in zip(keys, files_to_download):
+        for key, file_to_download in zip(keys, [files_to_download[ERA]]):
             fname = basedir + file_to_download.split("/")[-1]
-            cfg[key] = fname
+            cfg[key] = f"RPLME_PATH_FW/{ERA}/lumimask/" + fname.split("/")[-1]
             with open(fname, "wb") as file:
                 file.write(requests.get(file_to_download).content)
 
-        files_to_download = [
-            "https://gpizzati.web.cern.ch/test/roccor/RoccoR2018UL.txt"
-        ]
+        files_to_download = {
+            "Full2016v9HIPM": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2016ULa.txt",
+            "Full2016v9noHIPM": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2016ULb.txt",
+            "Full2017v9": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2017UL.txt",
+            "Full2018v9": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2018UL.txt",
+        }
         keys = ["rochester_file"]
 
-        basedir = os.path.abspath(".") + "/data/2018/rochester/"
+        basedir = f"../data/{ERA}/rochester/"
         os.makedirs(basedir, exist_ok=True)
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
         }
-        for key, file_to_download in zip(keys, files_to_download):
+        for key, file_to_download in zip(keys, [files_to_download[ERA]]):
             fname = basedir + file_to_download.split("/")[-1]
-            cfg[key] = fname
+            cfg[key] = f"RPLME_PATH_FW/{ERA}/rochester/" + fname.split("/")[-1]
             with open(fname, "wb") as file:
                 file.write(requests.get(file_to_download, headers=headers).content)
 
         print(json.dumps(cfg, indent=2))
 
-        with open("data/cfg.json", "w") as file:
+        with open(f"../data/{ERA}/cfg.json", "w") as file:
             json.dump(cfg, file, indent=2)
 
     def download_latinos_samples():
@@ -263,4 +298,4 @@ for ERA in config_eras:
     download_latinos_samples()
     convert_latinos_samples()
     subprocess.Popen(f"rm -r {basedir}/samples_latinos/", shell=True)
-    # setup_cfg()
+    setup_cfg()

@@ -1,0 +1,31 @@
+{
+  "flags": [
+    "goodVertices",
+    "globalSuperTightHalo2016Filter",
+    "HBHENoiseFilter",
+    "HBHENoiseIsoFilter",
+    "EcalDeadCellTriggerPrimitiveFilter",
+    "BadPFMuonFilter",
+    "BadPFMuonDzFilter",
+    "ecalBadCalibFilter",
+    "eeBadScFilter"
+  ],
+  "eleWP": "mvaFall17V2Iso_WP90",
+  "muWP": "cut_Tight_HWWW",
+  "leptonSF": "RPLME_PATH_FW/data/Full2017v9/lepton_sf.json.gz",
+  "puWeightsKey": "Collisions17_UltraLegacy_goldenJSON",
+  "do_theory_variations": false,
+  "year": "2017",
+  "bTag": {
+    "btagLoose": 0.0532,
+    "btagMedium": 0.304,
+    "btagTight": 0.7476
+  },
+  "jer_smear": "RPLME_PATH_FW/Full2017v9/clib/jer_smear.json.gz",
+  "jet_jerc": "RPLME_PATH_FW/Full2017v9/clib/jet_jerc.json.gz",
+  "puidSF": "RPLME_PATH_FW/Full2017v9/clib/jmar.json.gz",
+  "btagSF": "RPLME_PATH_FW/Full2017v9/clib/btagging.json.gz",
+  "puWeights": "RPLME_PATH_FW/Full2017v9/clib/puWeights.json.gz",
+  "lumiMask": "RPLME_PATH_FW/Full2017v9/lumimask/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt",
+  "rochester_file": "RPLME_PATH_FW/Full2017v9/rochester/RoccoR2017UL.txt"
+}
