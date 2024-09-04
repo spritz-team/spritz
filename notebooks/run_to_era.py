@@ -7,7 +7,7 @@ import rich
 import gzip
 
 
-ERA = "Full2017v9"
+ERA = "Full2018v9"
 
 for ERA, year in [
     ("Full2018v9", "2018"),
@@ -17,12 +17,12 @@ for ERA, year in [
 ]:
     run_ranges = {}
     for era in Trigger[ERA]:
-        if 'begin' in Trigger[ERA][era]:
+        if "begin" in Trigger[ERA][era]:
             begin = Trigger[ERA][era]["begin"]
-            end = Trigger[ERA][era]["end"]+1
+            end = Trigger[ERA][era]["end"] + 1
             run_ranges[(begin, end)] = era
         else:
-            for run in  sorted(Trigger[ERA][era]['runList']):
+            for run in sorted(Trigger[ERA][era]["runList"]):
                 begin = run
                 end = run + 1
                 run_ranges[(begin, end)] = era
@@ -56,9 +56,16 @@ for ERA, year in [
 
     import os
 
+    csets = correctionlib.schemav2.CorrectionSet(
+        schema_version=2,
+        corrections=[
+            cset,
+        ],
+    )
+
     os.makedirs(f"../data/{ERA}/clib", exist_ok=True)
     with gzip.open(f"../data/{ERA}/clib/run_to_era.json.gz", "wt") as fout:
-        fout.write(cset.json(exclude_unset=True))
+        fout.write(csets.json(exclude_unset=True))
 
     # ceval = cset.to_evaluator()
     # runs = np.arange(297020, 306463)

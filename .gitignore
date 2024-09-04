@@ -1,11 +1,13 @@
-src/data/samples_latinos**
+src/data/*/samples_latinos**
 **root
 **png
 **__pycache__
 special_start.sh
 src/spritz/__version__.py
 src/spritz/version.py
-**condor
+**condor*
 configs/*/data**
+configs/*/plot**
+configs/*/condor*
 **.sites_map.json
 .ipynb_checkpoints

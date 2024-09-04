@@ -17,6 +17,7 @@ def lepton_sf(events, variations, ceval_lepton_sf, cfg):
     ele_mask = abs(events.Lepton.pdgId) == 11
     mu_mask = abs(events.Lepton.pdgId) == 13
 
+    run_period = ak.copy(events.run_period)
     pt = ak.copy(events.Lepton.pt)
     eta = ak.copy(events.Lepton.eta)
 
@@ -88,7 +89,7 @@ def lepton_sf(events, variations, ceval_lepton_sf, cfg):
             varied_col = variation_module.Variation.format_varied_column(
                 ("Lepton", "RecoSF"), var_name
             )
-            #res = lepton_reco_sf["nominal"] + sign * lepton_reco_sf[f"syst_{tag}"]
+            # res = lepton_reco_sf["nominal"] + sign * lepton_reco_sf[f"syst_{tag}"]
             res = lepton_reco_sf[f"syst_{tag}"]
             events[varied_col] = ak.where(mask, res, lepton_reco_sf["nominal"])
             variations.register_variation([("Lepton", "RecoSF")], var_name)
@@ -103,11 +104,12 @@ def lepton_sf(events, variations, ceval_lepton_sf, cfg):
     for idiso_sf in ["ele_wp"]:
         for variation in lepton_idiso_vars:
             mask = sfs_dict[idiso_sf]["mask"]
+            _run_period = ak.mask(run_period, mask)
             _eta = ak.mask(eta, mask)
             _pt = ak.mask(pt, mask)
             lepton_idiso_sf[variation] = ak.where(
                 mask,
-                sfs_dict[idiso_sf]["wrap"](variation, _eta, _pt),
+                sfs_dict[idiso_sf]["wrap"](_run_period, variation, _eta, _pt),
                 lepton_idiso_sf[variation],
             )
 

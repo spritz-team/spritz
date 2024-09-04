@@ -12,20 +12,59 @@
   ],
   "eleWP": "mvaFall17V2Iso_WP90",
   "muWP": "cut_Tight_HWWW",
-  "leptonSF": "RPLME_PATH_FW/data/Full2016v9HIPM/lepton_sf.json.gz",
+  "leptonSF": "RPLME_PATH_FW/data/Full2016v9HIPM/clib/lepton_sf.json.gz",
   "puWeightsKey": "Collisions16_UltraLegacy_goldenJSON",
+  "run_to_era": "RPLME_PATH_FW/data/Full2016v9HIPM/clib/run_to_era.json.gz",
   "do_theory_variations": false,
+  "era": "Full2016v9HIPM",
   "year": "2016",
+  "jet_sel": {
+    "jetId": 2,
+    "minpt": 15,
+    "maxeta": 4.7
+  },
+  "leptonsWP": {
+    "eleWP": "mvaFall17V2Iso_WP90",
+    "muWP": "cut_Tight80x"
+  },
   "bTag": {
     "btagLoose": 0.0508,
     "btagMedium": 0.2598,
     "btagTight": 0.6502
   },
-  "jer_smear": "RPLME_PATH_FW/Full2016v9HIPM/clib/jer_smear.json.gz",
-  "jet_jerc": "RPLME_PATH_FW/Full2016v9HIPM/clib/jet_jerc.json.gz",
-  "puidSF": "RPLME_PATH_FW/Full2016v9HIPM/clib/jmar.json.gz",
-  "btagSF": "RPLME_PATH_FW/Full2016v9HIPM/clib/btagging.json.gz",
-  "puWeights": "RPLME_PATH_FW/Full2016v9HIPM/clib/puWeights.json.gz",
-  "lumiMask": "RPLME_PATH_FW/Full2016v9HIPM/lumimask/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt",
-  "rochester_file": "RPLME_PATH_FW/Full2016v9HIPM/rochester/RoccoR2016ULa.txt"
+  "jme": {
+    "lvl_compound": "L1L2L3Res",
+    "jet_algo": "AK4PFchs",
+    "jer_tag": "Summer20UL16APV_JRV3_MC",
+    "jec_tag": {
+      "mc": "Summer19UL16APV_V7_MC",
+      "data": {
+        "UL2016_preVFPB": "Summer19UL16APV_RunBCD_V7_DATA",
+        "UL2016_preVFPC": "Summer19UL16APV_RunBCD_V7_DATA",
+        "UL2016_preVFPD": "Summer19UL16APV_RunBCD_V7_DATA",
+        "UL2016_preVFPE": "Summer19UL16APV_RunEF_V7_DATA",
+        "UL2016_preVFPF": "Summer19UL16APV_RunEF_V7_DATA"
+      }
+    },
+    "jes": [
+      "Absolute",
+      "Absolute_2016",
+      "BBEC1",
+      "BBEC1_2016",
+      "EC2",
+      "EC2_2016",
+      "FlavorQCD",
+      "HF",
+      "HF_2016",
+      "RelativeBal",
+      "RelativeSample_2016"
+    ]
+  },
+  "jer_smear": "RPLME_PATH_FW/data/Full2016v9HIPM/clib/jer_smear.json.gz",
+  "jet_jerc": "RPLME_PATH_FW/data/Full2016v9HIPM/clib/jet_jerc.json.gz",
+  "puidSF": "RPLME_PATH_FW/data/Full2016v9HIPM/clib/jmar.json.gz",
+  "btagSF": "RPLME_PATH_FW/data/Full2016v9HIPM/clib/btagging.json.gz",
+  "puWeights": "RPLME_PATH_FW/data/Full2016v9HIPM/clib/puWeights.json.gz",
+  "lumiMask": "RPLME_PATH_FW/data/Full2016v9HIPM/lumimask/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt",
+  "rochester_file": "RPLME_PATH_FW/data/Full2016v9HIPM/rochester/RoccoR2016aUL.txt"
 }

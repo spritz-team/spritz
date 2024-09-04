@@ -5,7 +5,11 @@ import os
 from math import ceil
 from typing import NewType
 
-from framework import add_dict_iterable, read_chunks, write_chunks  # noqa: F401
+from spritz.framework.framework import (  # noqa: F401
+    add_dict_iterable,
+    read_chunks,
+    write_chunks,
+)
 
 MERGE_RESULT_FNAME = "tmp_special_"
 
@@ -117,7 +121,7 @@ def create_tree(inputs, reduce_function, output, executor, elements_for_task=10)
         create_tree(new_inputs, reduce_function, output, executor, elements_for_task)
 
 
-if __name__ == "__main__":
+def main():
     # basepath = "/gwdata/users/gpizzati/condor_processor/results"
     # inputs = glob.glob(f"{basepath}/results_job_*.pkl")
     basepath = os.path.abspath("condor")
@@ -143,3 +147,7 @@ if __name__ == "__main__":
     # datasets = list(filter(lambda k: "root:" not in k, results.keys()))
     datasets = results.keys()
     print([(dataset, results[dataset]["sumw"]) for dataset in datasets])
+
+
+if __name__ == "__main__":
+    main()

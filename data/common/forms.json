@@ -1,0 +1,204 @@
+{
+    "data": {
+        "Jet": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "jetId",
+                "puId",
+                "rawFactor",
+                "area",
+                "btagDeepFlavB"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "PuppiMET": {
+            "branches": [
+                "pt",
+                "phi"
+            ],
+            "with_name": null
+        },
+        "Electron": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "pdgId",
+                "mvaFall17V2Iso_WP90",
+                "convVeto",
+                "pfRelIso03_all",
+                "cutBased",
+                "sieie",
+                "eInvMinusPInv",
+                "dxy",
+                "dz"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "Muon": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "pdgId",
+                "tightId",
+                "pfRelIso04_all",
+                "dxy",
+                "dz"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "fixedGridRhoFastjetAll": {
+            "branches": [],
+            "with_name": null
+        },
+        "run": {
+            "branches": [],
+            "with_name": null
+        },
+        "luminosityBlock": {
+            "branches": [],
+            "with_name": null
+        }
+    },
+    "mc": {
+        "Jet": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "jetId",
+                "puId",
+                "genJetIdx",
+                "rawFactor",
+                "area",
+                "btagDeepFlavB",
+                "hadronFlavour"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "PuppiMET": {
+            "branches": [
+                "pt",
+                "phi"
+            ],
+            "with_name": null
+        },
+        "LHEPart": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "pdgId",
+                "status"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "GenPart": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "pdgId",
+                "status",
+                "genPartIdxMother",
+                "statusFlags"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "GenDressedLepton": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass",
+                "pdgId",
+                "isPrompt",
+                "genPartIdxMother",
+                "statusFlags"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "GenJet": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "mass"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "Electron": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "pdgId",
+                "mvaFall17V2Iso_WP90",
+                "convVeto",
+                "pfRelIso03_all",
+                "cutBased",
+                "sieie",
+                "eInvMinusPInv",
+                "dxy",
+                "dz"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "Muon": {
+            "branches": [
+                "pt",
+                "eta",
+                "phi",
+                "pdgId",
+                "genPartIdx",
+                "nTrackerLayers",
+                "tightId",
+                "pfRelIso04_all",
+                "dxy",
+                "dz"
+            ],
+            "with_name": "Momentum4D"
+        },
+        "fixedGridRhoFastjetAll": {
+            "branches": [],
+            "with_name": null
+        },
+        "genWeight": {
+            "branches": [],
+            "with_name": null
+        },
+        "LHEScaleWeight": {
+            "branches": [],
+            "with_name": null
+        },
+        "LHEPdfWeight": {
+            "branches": [],
+            "with_name": null
+        },
+        "Pileup": {
+            "branches": [
+                "nTrueInt"
+            ],
+            "with_name": null
+        },
+        "run": {
+            "branches": [],
+            "with_name": null
+        },
+        "luminosityBlock": {
+            "branches": [],
+            "with_name": null
+        },
+        "event": {
+            "branches": [],
+            "with_name": null
+        }
+    }
+}

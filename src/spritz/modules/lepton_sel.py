@@ -3,7 +3,6 @@ from data.common import LeptonSel_cfg
 
 
 def createLepton(events):
-
     events[("Muon", "mass")] = ak.zeros_like(events.Muon.pt)
     events[("Electron", "mass")] = ak.zeros_like(events.Electron.pt)
 
@@ -37,9 +36,9 @@ def createLepton(events):
     return events
 
 
-def leptonSel(events):
-    ElectronWP = LeptonSel_cfg.ElectronWP["Full2018v9"]
-    MuonWP = LeptonSel_cfg.MuonWP["Full2018v9"]
+def leptonSel(events, cfg):
+    ElectronWP = LeptonSel_cfg.ElectronWP[cfg["era"]]
+    MuonWP = LeptonSel_cfg.MuonWP[cfg["era"]]
 
     ele_mask = abs(events.Lepton.pdgId) == 11
     mu_mask = abs(events.Lepton.pdgId) == 13

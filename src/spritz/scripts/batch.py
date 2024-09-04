@@ -4,17 +4,20 @@ import subprocess
 import sys  # noqa: F401
 
 from spritz.framework.framework import (
+    add_dict,
+    get_analysis_dict,
     get_fw_path,
     read_chunks,
     write_chunks,
-    get_analysis_dict,
-    # dump_analysis_dict,
 )
 
 
 def preprocess_chunks(year):
+    with open(f"{get_fw_path()}/data/common/forms.json", "r") as file:
+        forms_common = json.load(file)
     with open(f"{get_fw_path()}/data/{year}/forms.json", "r") as file:
-        forms = json.load(file)
+        forms_era = json.load(file)
+    forms = add_dict(forms_common, forms_era)
     new_chunks = read_chunks("data/chunks.pkl")
 
     for i, chunk in enumerate(new_chunks):
@@ -87,7 +90,6 @@ def submit(
     proc = subprocess.Popen(f"cp {script_name} condor/", shell=True)
     proc.wait()
 
-
     txtsh = "#!/bin/bash\n"
     txtsh += f"source {get_fw_path()}/start.sh\n"
     txtsh += f"time python {script_name} {path_an}\n"
@@ -143,7 +145,7 @@ def main():
         chunks,
         path_an,
         an_dict,
-        njobs=an_dict['njobs'],
+        njobs=an_dict["njobs"],
         clean_up=True,
         start=start,
         dryRun=dryRun,

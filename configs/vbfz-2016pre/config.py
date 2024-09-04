@@ -5,8 +5,9 @@ import hist
 import numpy as np
 from spritz.framework.framework import cmap_pastel, cmap_petroff
 
-year = "Full2018v9"
-lumi = 7066.552169 / 1000
+year = "Full2016v9HIPM"
+# lumi = 7066.552169 / 1000
+lumi = 5829.427727 / 1000  # ERA B of 2016preVFP
 plot_label = "VBF-Z"
 njobs = 500
 
@@ -99,19 +100,23 @@ for dataset in datasets:
 
 
 DataRun = [
-    ["A", "Run2018A-UL2018-v1"],
-    ["B", "Run2018B-UL2018-v1"],
-    ["C", "Run2018C-UL2018-v1"],
-    ["D", "Run2018D-UL2018-v1"],
+    ["B", "Run2016B-ver1_HIPM_UL2016-v2"],
+    ["B", "Run2016B-ver2_HIPM_UL2016-v2"],
+    ["C", "Run2016C-HIPM_UL2016-v2"],
+    ["D", "Run2016D-HIPM_UL2016-v2"],
+    ["E", "Run2016E-HIPM_UL2016-v2"],
+    ["F", "Run2016F-HIPM_UL2016-v2"],
 ]
 
-DataSets = ["SingleMuon", "EGamma", "DoubleMuon"]
+DataSets = ["SingleMuon", "SingleElectron", "DoubleEG", "DoubleMuon"]
 
 DataTrig = {
-    "DoubleMuon": "events.DoubleMu",
-    "SingleMuon": "(~events.DoubleMu) & events.SingleMu",
-    "EGamma": "(~events.DoubleMu) & (~events.SingleMu) & (events.SingleEle | events.DoubleEle)",
+    "SingleMuon": "events.SingleMu",
+    "SingleElectron": "events.SingleEle",
+    "DoubleMuon": "(~events.SingleMu) & (~events.SingleEle) & events.DoubleMu",
+    "DoubleEG": "(~events.SingleMu) & (~events.SingleEle) & (~events.DoubleMu) & events.DoubleEle",
 }
+
 
 samples_data = []
 for era, sd in DataRun:
@@ -122,23 +127,17 @@ for era, sd in DataRun:
         if era != "B":
             continue
 
-        if (
-            ("DoubleMuon" in pd and "Run2018B" in sd)
-            or ("DoubleMuon" in pd and "Run2018D" in sd)
-            or ("SingleMuon" in pd and "Run2018A" in sd)
-            or ("SingleMuon" in pd and "Run2018B" in sd)
-            or ("SingleMuon" in pd and "Run2018C" in sd)
-        ):
-            tag = tag.replace("v1", "v2")
+        if "DoubleEG" in pd and "Run2016B-ver2" in sd:  # Run2016B-ver2_HIPM_UL2016-v2
+            tag = tag.replace("v2", "v3")
+
         datasets[f"{pd}_{era}"] = {
             "files": tag,
             "trigger_sel": DataTrig[pd],
             "read_form": "data",
             "is_data": True,
-            "era": "UL2018{era}",
+            "era": "UL2016_preVFP{era}",
         }
         samples_data.append(f"{pd}_{era}")
-
 
 samples = {}
 colors = {}

@@ -1,10 +1,9 @@
-from copy import deepcopy
-import os
-import requests
 import json
+import os
 import subprocess
+from copy import deepcopy
 
-# ERA = "Full2017v9"
+import requests
 
 config_eras = {
     "Full2018v9": {
@@ -26,10 +25,14 @@ config_eras = {
 }
 
 
+jsonpog_path = "/Users/giorgiopizzati/Downloads/jsonpog-integration-master/POG/"
+jsonpog_path = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/"
+
+
 for ERA in config_eras:
     basedir = f"../data/{ERA}/samples/"
-    if "2018" in ERA:
-        continue
+    # if "2018" in ERA:
+    #     continue
 
     def setup_cfg():
         # Setup all the needed data
@@ -54,11 +57,39 @@ for ERA in config_eras:
             ],
             "eleWP": "mvaFall17V2Iso_WP90",
             "muWP": "cut_Tight_HWWW",
-            "leptonSF": f"RPLME_PATH_FW/data/{ERA}/lepton_sf.json.gz",
+            "leptonSF": f"RPLME_PATH_FW/data/{ERA}/clib/lepton_sf.json.gz",
             "puWeightsKey": f"Collisions{int(year_maps[ERA])-2000}_UltraLegacy_goldenJSON",
+            "run_to_era": f"RPLME_PATH_FW/data/{ERA}/clib/run_to_era.json.gz",
             "do_theory_variations": False,
+            "era": ERA,
         }
         cfg["year"] = year_maps[ERA]
+
+        cfg["jet_sel"] = {
+            "jetId": 2,
+            "minpt": 15,
+            "maxeta": 4.7,
+        }
+
+        leptons_wp = {
+            "Full2016v9HIPM": {
+                "eleWP": "mvaFall17V2Iso_WP90",
+                "muWP": "cut_Tight80x",
+            },
+            "Full2016v9noHIPM": {
+                "eleWP": "mvaFall17V2Iso_WP90",
+                "muWP": "cut_Tight80x",
+            },
+            "Full2017v9": {
+                "eleWP": "mvaFall17V2Iso_WP90",
+                "muWP": "cut_Tight_HWWW",
+            },
+            "Full2018v9": {
+                "eleWP": "mvaFall17V2Iso_WP90",
+                "muWP": "cut_Tight_HWWW",
+            },
+        }
+        cfg["leptonsWP"] = leptons_wp[ERA]
 
         btag_wps = {
             "Full2016v9HIPM": {
@@ -82,8 +113,120 @@ for ERA in config_eras:
                 "btagTight": 0.7100,
             },
         }
-
         cfg["bTag"] = btag_wps[ERA]
+
+        jme = {
+            "Full2018v9": {
+                "lvl_compound": "L1L2L3Res",
+                "jet_algo": "AK4PFchs",
+                "jer_tag": "Summer19UL18_JRV2_MC",
+                "jec_tag": {
+                    "mc": "Summer19UL18_V5_MC",
+                    "data": {
+                        "UL2018A": "Summer19UL18_RunA_V5_DATA",
+                        "UL2018B": "Summer19UL18_RunB_V5_DATA",
+                        "UL2018C": "Summer19UL18_RunC_V5_DATA",
+                        "UL2018D": "Summer19UL18_RunD_V5_DATA",
+                    },
+                },
+                "jes": [
+                    "Absolute",
+                    "Absolute_2018",
+                    "BBEC1",
+                    "BBEC1_2018",
+                    "EC2",
+                    "EC2_2018",
+                    "FlavorQCD",
+                    "HF",
+                    "HF_2018",
+                    "RelativeBal",
+                    "RelativeSample_2018",
+                ],
+            },
+            "Full2017v9": {
+                "lvl_compound": "L1L2L3Res",
+                "jet_algo": "AK4PFchs",
+                "jer_tag": "Summer19UL17_JRV2_MC",
+                "jec_tag": {
+                    "mc": "Summer19UL17_V5_MC",
+                    "data": {
+                        "UL2017B": "Summer19UL17_RunB_V5_DATA",
+                        "UL2017C": "Summer19UL17_RunC_V5_DATA",
+                        "UL2017D": "Summer19UL17_RunD_V5_DATA",
+                        "UL2017E": "Summer19UL17_RunE_V5_DATA",
+                        "UL2017F": "Summer19UL17_RunF_V5_DATA",
+                    },
+                },
+                "jes": [
+                    "Absolute",
+                    "Absolute_2017",
+                    "BBEC1",
+                    "BBEC1_2017",
+                    "EC2",
+                    "EC2_2017",
+                    "FlavorQCD",
+                    "HF",
+                    "HF_2017",
+                    "RelativeBal",
+                    "RelativeSample_2017",
+                ],
+            },
+            "Full2016v9noHIPM": {
+                "lvl_compound": "L1L2L3Res",
+                "jet_algo": "AK4PFchs",
+                "jer_tag": "Summer20UL16_JRV3_MC",
+                "jec_tag": {
+                    "mc": "Summer19UL16_V7_MC",
+                    "data": {
+                        "UL2016F": "Summer19UL16_RunFGH_V7_DATA",
+                        "UL2016G": "Summer19UL16_RunFGH_V7_DATA",
+                        "UL2016H": "Summer19UL16_RunFGH_V7_DATA",
+                    },
+                },
+                "jes": [
+                    "Absolute",
+                    "Absolute_2016",
+                    "BBEC1",
+                    "BBEC1_2016",
+                    "EC2",
+                    "EC2_2016",
+                    "FlavorQCD",
+                    "HF",
+                    "HF_2016",
+                    "RelativeBal",
+                    "RelativeSample_2016",
+                ],
+            },
+            "Full2016v9HIPM": {
+                "lvl_compound": "L1L2L3Res",
+                "jet_algo": "AK4PFchs",
+                "jer_tag": "Summer20UL16APV_JRV3_MC",
+                "jec_tag": {
+                    "mc": "Summer19UL16APV_V7_MC",
+                    "data": {
+                        "UL2016_preVFPB": "Summer19UL16APV_RunBCD_V7_DATA",
+                        "UL2016_preVFPC": "Summer19UL16APV_RunBCD_V7_DATA",
+                        "UL2016_preVFPD": "Summer19UL16APV_RunBCD_V7_DATA",
+                        "UL2016_preVFPE": "Summer19UL16APV_RunEF_V7_DATA",
+                        "UL2016_preVFPF": "Summer19UL16APV_RunEF_V7_DATA",
+                    },
+                },
+                "jes": [
+                    "Absolute",
+                    "Absolute_2016",
+                    "BBEC1",
+                    "BBEC1_2016",
+                    "EC2",
+                    "EC2_2016",
+                    "FlavorQCD",
+                    "HF",
+                    "HF_2016",
+                    "RelativeBal",
+                    "RelativeSample_2016",
+                ],
+            },
+        }
+        cfg["jme"] = jme[ERA]
 
         # basedir = os.path.abspath(".") + "/data/2018/jme/"
         # os.makedirs(basedir, exist_ok=True)
@@ -153,8 +296,9 @@ for ERA in config_eras:
             f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/{year_maps[ERA]}/btagging.json.gz",
             f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/{year_maps[ERA]}/puWeights.json.gz",
         ]
-        jsonpog_path = '/Users/giorgiopizzati/Downloads/jsonpog-integration-master/POG/'
-        files_to_copy = list(map(lambda k: jsonpog_path + k.split('POG')[-1], files_to_copy))
+        files_to_copy = list(
+            map(lambda k: jsonpog_path + k.split("POG")[-1], files_to_copy)
+        )
         keys = ["jer_smear", "jet_jerc", "puidSF", "btagSF", "puWeights"]
 
         basedir = f"../data/{ERA}/clib/"
@@ -163,7 +307,7 @@ for ERA in config_eras:
         for key, file_to_copy in zip(keys, files_to_copy):
             # for file_to_copy in files_to_copy:
             fname = file_to_copy.split("/")[-1]
-            cfg[key] = f"RPLME_PATH_FW/{ERA}/clib/{fname}"
+            cfg[key] = f"RPLME_PATH_FW/data/{ERA}/clib/{fname}"
             proc = subprocess.Popen(f"cp {file_to_copy} {basedir}", shell=True)
             proc.wait()
 
@@ -175,18 +319,18 @@ for ERA in config_eras:
         }
         keys = ["lumiMask"]
 
-        basedir = f"../data/{ERA}/lumimasks/"
+        basedir = f"../data/{ERA}/lumimask/"
         os.makedirs(basedir, exist_ok=True)
 
         for key, file_to_download in zip(keys, [files_to_download[ERA]]):
             fname = basedir + file_to_download.split("/")[-1]
-            cfg[key] = f"RPLME_PATH_FW/{ERA}/lumimask/" + fname.split("/")[-1]
+            cfg[key] = f"RPLME_PATH_FW/data/{ERA}/lumimask/" + fname.split("/")[-1]
             with open(fname, "wb") as file:
                 file.write(requests.get(file_to_download).content)
 
         files_to_download = {
-            "Full2016v9HIPM": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2016ULa.txt",
-            "Full2016v9noHIPM": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2016ULb.txt",
+            "Full2016v9HIPM": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2016aUL.txt",
+            "Full2016v9noHIPM": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2016bUL.txt",
             "Full2017v9": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2017UL.txt",
             "Full2018v9": "https://github.com/latinos/LatinoAnalysis/raw/UL_production/NanoGardener/python/data/RoccoR2018UL.txt",
         }
@@ -200,7 +344,7 @@ for ERA in config_eras:
         }
         for key, file_to_download in zip(keys, [files_to_download[ERA]]):
             fname = basedir + file_to_download.split("/")[-1]
-            cfg[key] = f"RPLME_PATH_FW/{ERA}/rochester/" + fname.split("/")[-1]
+            cfg[key] = f"RPLME_PATH_FW/data/{ERA}/rochester/" + fname.split("/")[-1]
             with open(fname, "wb") as file:
                 file.write(requests.get(file_to_download, headers=headers).content)
 

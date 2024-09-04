@@ -7,8 +7,7 @@ import matplotlib as mpl
 import mplhep as hep
 import numpy as np
 import uproot
-
-from framework import get_analysis_dict
+from spritz.framework.framework import get_analysis_dict
 
 mpl.use("Agg")
 from matplotlib import pyplot as plt
@@ -30,7 +29,7 @@ def darker_color(color):
     return tuple(rgb)
 
 
-def plot(input_file, region, variable, samples, nuisances, colors):
+def plot(input_file, region, variable, samples, nuisances, lumi, colors):
     print("Doing ", region, variable)
 
     histos = {}
@@ -268,7 +267,7 @@ def plot(input_file, region, variable, samples, nuisances, colors):
     # print('time after fig save', time.time()-start)
 
 
-if __name__ == "__main__":
+def main():
     analysis_dict = get_analysis_dict()
     samples = analysis_dict["samples"]
 
@@ -312,4 +311,8 @@ if __name__ == "__main__":
         for variable in variables:
             if "axis" not in variables[variable]:
                 continue
-            plot(input_file, region, variable, samples, nuisances, colors)
+            plot(input_file, region, variable, samples, nuisances, lumi, colors)
+
+
+if __name__ == "__main__":
+    main()

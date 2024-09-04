@@ -1,7 +1,8 @@
-import awkward as ak
-from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
-import spritz.framework.variation as variation
 from typing import NewType
+
+import awkward as ak
+import spritz.framework.variation as variation
+from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 
 correctionlib_evaluator = NewType("correctionlib_evaluator", any)
 
@@ -24,10 +25,14 @@ def func(
     events: ak.Array,
     variations: variation.Variation,
     ceval_puid: correctionlib_evaluator,
+    cfg,
     doVariations: bool = False,
 ):
     wrap_c = correctionlib_wrapper(ceval_puid["PUJetID_eff"])
-    puId_shift = 1 << 2
+    if "2016" not in cfg["era"]:
+        puId_shift = 1 << 2
+    else:
+        puId_shift = 1 << 0
     pass_puId = ak.values_astype(events.Jet.puId & puId_shift, bool)
 
     jet_genmatched = (events.Jet.genJetIdx >= 0) & (
@@ -64,10 +69,10 @@ def func(
     return events, variations
 
 
-def puid_sf(events, variations, ceval_puid):
-    events, variations = func(events, variations, ceval_puid, doVariations=False)
+def puid_sf(events, variations, ceval_puid, cfg):
+    events, variations = func(events, variations, ceval_puid, cfg, doVariations=False)
     # now doing variations
 
-    events, variations = func(events, variations, ceval_puid, doVariations=True)
+    events, variations = func(events, variations, ceval_puid, cfg, doVariations=True)
 
     return events, variations

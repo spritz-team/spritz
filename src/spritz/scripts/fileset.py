@@ -2,29 +2,43 @@ import json
 import os
 import sys
 
-from coffea.dataset_tools import rucio_utils
 from dbs.apis.dbsClient import DbsApi
-from spritz.framework.framework import get_fw_path
+from spritz.framework.framework import get_analysis_dict, get_fw_path
 
+# from coffea.dataset_tools import rucio_utils
+from spritz.utils import rucio_utils
+from spritz.utils.utils import print_debug
 
 path_fw = get_fw_path()
 
 
-def get_files(year):
+def get_files(era):
     Samples = {}
 
-    path = os.path.abspath(f"{path_fw}/data/{year}/samples/")
-    print("Working in analysis path:", path)
-    sys.path.insert(0, path)
-    exec(
-        "from active_samples import active_samples",
-        globals(),
-        globals(),
-    )
+    try:
+        path = os.path.abspath(f"{path_fw}/data/{era}/samples/")
+        print("Working in analysis path:", path)
+        sys.path.insert(0, path)
+        d = {}
+        exec(
+            "from active_samples import active_samples",
+            globals(),
+            d,
+        )
+        active_samples = d["active_samples"]
+    except Exception as e:
+        print_debug(e)
+        print(f"No active samples, will use full dataset for era: {era}")
+        active_samples = "ALL"
 
-    with open(f"{path_fw}/data/{year}/samples/samples.json") as file:
+    with open(f"{path_fw}/data/{era}/samples/samples.json") as file:
         Samples = json.load(file)
-        Samples = {k: v for k, v in Samples["samples"].items() if k in active_samples}  # noqa: F821 # type: ignore
+        if active_samples == "ALL":
+            Samples = {k: v for k, v in Samples["samples"].items()}  # noqa: F821 # type: ignore
+        else:
+            Samples = {
+                k: v for k, v in Samples["samples"].items() if k in active_samples
+            }  # noqa: F821 # type: ignore
 
     files = {}
     for sampleName in Samples:
@@ -34,13 +48,8 @@ def get_files(year):
 
 
 def main():
-    kwargs = {
-        "bad_sites": [
-            # "ts.infn",
-        ],
-    }
-    year = "2018"
-    files = get_files(year)
+    era = get_analysis_dict()["year"]
+    files = get_files(era)
     print(files)
     rucio_client = rucio_utils.get_rucio_client()
     # DE|FR|IT|BE|CH|ES|UK

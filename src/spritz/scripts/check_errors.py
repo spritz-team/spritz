@@ -1,24 +1,30 @@
+import concurrent.futures
 import glob
 import sys
 import traceback as tb
 
-from framework import add_dict, read_chunks, write_chunks
-
-files = glob.glob("condor/job_*/chunks_job.pkl")
-err = glob.glob("condor/job_*/err.txt")
-
-jobs = list(map(lambda k: k.split("/")[-2], files))
-# jobs_err = list(map(lambda k: k.split("/")[-2], err))
-# jobs = list(set(jobs).intersection(jobs_err))
-# jobs = list(set(jobs).intersection(jobs_err))
+from spritz.framework.framework import read_chunks
 
 
-chunks = []
-results = {}
+def bad_lines_fun(line):
+    if line.strip() == "":
+        return False
+
+    if line.startswith("real"):
+        return False
+    if line.startswith("user"):
+        return False
+    if line.startswith("sys"):
+        return False
+    if (
+        "could not instantiate session cipher using cipher public info from server"
+        in line
+    ):
+        return False
+    return True
 
 
 def check_job(job_id):
-    print("Checking", job_id)
     file = f"condor/{job_id}/chunks_job.pkl"
     file_backup = f"condor/{job_id}/chunks_job_original.pkl"
     try:
@@ -33,7 +39,6 @@ def check_job(job_id):
         return job_id
     chunks_total = 0
     chunks_err = 0
-    results_chunk = {}
     try:
         chunks = read_chunks(file)
         assert isinstance(chunks, list)
@@ -42,32 +47,43 @@ def check_job(job_id):
             if chunks[i]["result"] == {} and chunks[i]["error"] != "":
                 chunks_err += 1
                 break
-            # else:
-            #     results_chunk = add_dict(results_chunk, chunks[i]["result"])
         if chunks_total > 0 and chunks_err == 0:
-            print("job is done")
-            # results = add_dict(results, results_chunk)
+            ...
         else:
             print("skipping job, should be retried")
             return job_id
-    except Exception as e:
+    except Exception as _:
         return job_id
 
+    with open(f"condor/{job_id}/err.txt") as file:
+        lines = file.read().split("\n")
+        bad_lines = list(filter(bad_lines_fun, lines))
+        if len(bad_lines) > 0:
+            print("\033[91m", job_id, "\033[0m")
+            print("\n".join(bad_lines))
+            return job_id
 
-# write_chunks(results, "tmp.pkl")
-import concurrent.futures
 
-with concurrent.futures.ProcessPoolExecutor(max_workers=6) as pool:
-    tasks = []
-    for job_id in jobs:
-        tasks.append(pool.submit(check_job, job_id))
-    concurrent.futures.wait(tasks)
-    failed = []
-    for task in tasks:
-        res = task.result()
-        if res:
-            failed.append(res)
-    print(sorted(failed))
-    print("queue 1 Folder in " + " ".join(sorted(failed)))
-    print("Failed", len(failed))
-    print("Total", len(failed))
+def main():
+    files = glob.glob("condor/job_*/chunks_job.pkl")
+
+    jobs = list(map(lambda k: k.split("/")[-2], files))
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers=6) as pool:
+        tasks = []
+        for job_id in jobs:
+            tasks.append(pool.submit(check_job, job_id))
+        concurrent.futures.wait(tasks)
+        failed = []
+        for task in tasks:
+            res = task.result()
+            if res:
+                failed.append(res)
+        print(sorted(failed))
+        print("queue 1 Folder in " + " ".join(sorted(failed)))
+        print("Failed", len(failed))
+        print("Total", len(failed))
+
+
+if __name__ == "__main__":
+    main()

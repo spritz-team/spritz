@@ -488,6 +488,45 @@ MuonWP = {
                 },
                 "fakeW": "/LatinoAnalysis/NanoGardener/python/data/fake_prompt_rates/Full2016v9HIPM/cut_Tight80x/",
             },
+            "cut_Tight80x_tthmva_80": {
+                "cuts": {
+                    # Common cuts
+                    "True": [
+                        'abs(muon_col[LF_idx]["eta"]) < 2.4',
+                        'muon_col[LF_idx]["tightId"] == 1',
+                        'abs(muon_col[LF_idx]["dz"]) < 0.1',
+                        'muon_col[LF_idx]["pfRelIso04_all"] < 0.15',
+                        'muon_col[LF_idx]["mvaTTH"] > 0.8',
+                        #'muon_col[LF_idx]["trackIso"]/muon_col[LF_idx]["pt"] < 0.4' ,
+                    ],
+                    # dxy for pT < 20 GeV
+                    'muon_col[LF_idx]["pt"] <= 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.01 ',
+                    ],
+                    # dxy for pT > 20 GeV
+                    'muon_col[LF_idx]["pt"] > 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.02 ',
+                    ],
+                },
+                "idSF": {
+                    "1-3": [
+                        "LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v9HIPM/NUM_TightHWW_DEN_TrackerMuons_eta_pt.root"
+                    ],
+                },
+                "isoSF": {
+                    "1-3": [
+                        "LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v9HIPM/NUM_TightHWW_ISO_DEN_TightHWW_eta_pt.root"
+                    ],
+                },
+                "tthMvaSF": {
+                    "1-3": [
+                        "NUM_TightHWW_tth_ISO_DEN_TightHWW_ISO_eta_pt",  # Hist name
+                        "LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v9HIPM/NUM_TightHWW_tth_ISO_DEN_TightHWW_ISO_eta_pt.root",
+                    ]  # Nominal + stat + syst
+                    #                                              'LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v7/ttHMVA0p8_TightHWWCut_SFs_SYS_2016.root', ] # Syst
+                },
+                "fakeW": "/LatinoAnalysis/NanoGardener/python/data/fake_prompt_rates/Full2016v9HIPM/cut_Tight80x_tthmva_80/",
+            },
         },
     },
     "Full2016v9noHIPM": {
@@ -558,6 +597,45 @@ MuonWP = {
                     ],
                 },
                 "fakeW": "/LatinoAnalysis/NanoGardener/python/data/fake_prompt_rates/Full2016v9noHIPM/cut_Tight80x/",
+            },
+            "cut_Tight80x_tthmva_80": {
+                "cuts": {
+                    # Common cuts
+                    "True": [
+                        'abs(muon_col[LF_idx]["eta"]) < 2.4',
+                        'muon_col[LF_idx]["tightId"] == 1',
+                        'abs(muon_col[LF_idx]["dz"]) < 0.1',
+                        'muon_col[LF_idx]["pfRelIso04_all"] < 0.15',
+                        'muon_col[LF_idx]["mvaTTH"] > 0.8',
+                        #'muon_col[LF_idx]["trackIso"]/muon_col[LF_idx]["pt"] < 0.4' ,
+                    ],
+                    # dxy for pT < 20 GeV
+                    'muon_col[LF_idx]["pt"] <= 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.01 ',
+                    ],
+                    # dxy for pT > 20 GeV
+                    'muon_col[LF_idx]["pt"] > 20.0': [
+                        'abs(muon_col[LF_idx]["dxy"]) < 0.02 ',
+                    ],
+                },
+                "idSF": {
+                    "4-7": [
+                        "LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v9noHIPM/NUM_TightHWW_DEN_TrackerMuons_eta_pt.root"
+                    ],
+                },
+                "isoSF": {
+                    "4-7": [
+                        "LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v9noHIPM/NUM_TightHWW_ISO_DEN_TightHWW_eta_pt.root"
+                    ],
+                },
+                "tthMvaSF": {
+                    "4-7": [
+                        "NUM_TightHWW_tth_ISO_DEN_TightHWW_ISO_eta_pt",  # Hist name
+                        "LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v9noHIPM/NUM_TightHWW_tth_ISO_DEN_TightHWW_ISO_eta_pt.root",
+                    ]  # Nominal + stat + syst
+                    #                                              'LatinoAnalysis/NanoGardener/python/data/scale_factor/Full2016v7/ttHMVA0p8_TightHWWCut_SFs_SYS_2016.root', ] # Syst
+                },
+                "fakeW": "/LatinoAnalysis/NanoGardener/python/data/fake_prompt_rates/Full2016v9HIPM/cut_Tight80x_tthmva_80/",
             },
         },
     },

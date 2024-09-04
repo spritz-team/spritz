@@ -129,6 +129,8 @@ def add_dict(d1, d2):
     elif isinstance(d1, np.ndarray) and len(d1.shape) != 0:
         print("Debug np", d1, d2)
         return np.concatenate([d1, d2])
+    elif isinstance(d1, set):
+        return d1.union(d2)
     else:
         return d1 + d2
 
@@ -148,6 +150,7 @@ def big_process(process, filenames, start, stop, read_form, **kwargs):
 
     events = 0
     error = ""
+    print(filenames)
     for filename in filenames:
         try:
             events = read_events(filename, start=start, stop=stop, read_form=read_form)

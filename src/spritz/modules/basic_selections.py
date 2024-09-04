@@ -2,16 +2,19 @@ import awkward as ak
 from data.common.TrigMaker_cfg import Trigger
 
 
-def pass_trigger(events, ERA):
+def pass_trigger(events, year):
     keys = ["EleMu", "SingleEle", "DoubleEle", "SingleMu", "DoubleMu"]
     for key in keys:
         events[key] = ak.ones_like(events.weight) == 0.0  # all False
 
-    for era in Trigger[ERA]:
+    # since each era might have a different trigger we loop on them and look for events
+    # that pass an era cut (e.g. event is of era "B") and apply those cuts
+
+    for era in Trigger[year]:
         for key in keys:
             tmp = ak.ones_like(events.weight) == 0.0  # all False
-            for val in Trigger[ERA][era]["MC"][key]:
-                tmp = tmp | events.HLT[val]
+            for val in Trigger[year][era]["MC"][key]:
+                tmp = tmp | events.HLT[val[len("HLT_") :]]
             events[key] = events[key] | (events.run_period == era) & tmp
 
     pass_trigger = ak.ones_like(events.weight) == 0.0  # all False

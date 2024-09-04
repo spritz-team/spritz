@@ -5,8 +5,9 @@ import hist
 import numpy as np
 from spritz.framework.framework import cmap_pastel, cmap_petroff
 
-year = "Full2018v9"
-lumi = 7066.552169 / 1000
+year = "Full2017v9"
+# lumi = 7066.552169 / 1000
+lumi = 9.574029838  # ERA C of 2017
 plot_label = "VBF-Z"
 njobs = 500
 
@@ -99,19 +100,22 @@ for dataset in datasets:
 
 
 DataRun = [
-    ["A", "Run2018A-UL2018-v1"],
-    ["B", "Run2018B-UL2018-v1"],
-    ["C", "Run2018C-UL2018-v1"],
-    ["D", "Run2018D-UL2018-v1"],
+    ["B", "Run2017B-UL2017-v1"],
+    ["C", "Run2017C-UL2017-v1"],
+    ["D", "Run2017D-UL2017-v1"],
+    ["E", "Run2017E-UL2017-v1"],
+    ["F", "Run2017F-UL2017-v1"],
 ]
 
-DataSets = ["SingleMuon", "EGamma", "DoubleMuon"]
+DataSets = ["SingleMuon", "SingleElectron", "DoubleEG", "DoubleMuon"]
 
 DataTrig = {
-    "DoubleMuon": "events.DoubleMu",
-    "SingleMuon": "(~events.DoubleMu) & events.SingleMu",
-    "EGamma": "(~events.DoubleMu) & (~events.SingleMu) & (events.SingleEle | events.DoubleEle)",
+    "SingleMuon": "events.SingleMu",
+    "SingleElectron": "events.SingleEle",
+    "DoubleMuon": "(~events.SingleMu) & (~events.SingleEle) & events.DoubleMu",
+    "DoubleEG": "(~events.SingleMu) & (~events.SingleEle) & (~events.DoubleMu) & events.DoubleEle",
 }
+
 
 samples_data = []
 for era, sd in DataRun:
@@ -119,26 +123,17 @@ for era, sd in DataRun:
         tag = pd + "_" + sd
 
         # FIXME limit to only first era
-        if era != "B":
+        if era != "C":
             continue
 
-        if (
-            ("DoubleMuon" in pd and "Run2018B" in sd)
-            or ("DoubleMuon" in pd and "Run2018D" in sd)
-            or ("SingleMuon" in pd and "Run2018A" in sd)
-            or ("SingleMuon" in pd and "Run2018B" in sd)
-            or ("SingleMuon" in pd and "Run2018C" in sd)
-        ):
-            tag = tag.replace("v1", "v2")
         datasets[f"{pd}_{era}"] = {
             "files": tag,
             "trigger_sel": DataTrig[pd],
             "read_form": "data",
             "is_data": True,
-            "era": "UL2018{era}",
+            "era": "UL2017{era}",
         }
         samples_data.append(f"{pd}_{era}")
-
 
 samples = {}
 colors = {}

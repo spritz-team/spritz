@@ -22,9 +22,10 @@ packages = ["src/spritz"]
 spritz-fileset = "spritz.scripts.fileset:main"
 spritz-chunks = "spritz.scripts.chunks:main"
 spritz-batch = "spritz.scripts.batch:main"
-# mp-merge = "spritz.merge:main"
-# mp-postproc = "spritz.post_processing:main"
-# mp-plot = "spritz.plot:main"
+spritz-checkerrors = "spritz.scripts.check_errors:main"
+spritz-merge = "spritz.scripts.merge:main"
+spritz-postproc = "spritz.scripts.post_process:main"
+spritz-plot = "spritz.scripts.plot:main"
 # mp-cards = "spritz.make_cards:main"
 
 [tool.ruff]

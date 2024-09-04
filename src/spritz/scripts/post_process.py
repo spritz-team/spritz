@@ -3,11 +3,12 @@ import json
 import hist
 import numpy as np
 import uproot
+from spritz.framework.framework import get_analysis_dict, get_fw_path, read_chunks
 
-from framework import get_analysis_dict, path_fw, read_chunks
+path_fw = get_fw_path()
 
 
-def renorm(h, xs, sumw):
+def renorm(h, xs, sumw, lumi):
     scale = xs * 1000 * lumi / sumw
     # print(scale)
     _h = h.copy()
@@ -140,7 +141,7 @@ def blind(region, variable, edges):
         return np.arange(0, len(edges)) > len(edges) / 2
 
 
-def post_process(results, regions, variables, samples, xss):
+def post_process(results, regions, variables, samples, xss, nuisances, lumi):
     print("Start converting histograms")
 
     dout = {}
@@ -160,7 +161,7 @@ def post_process(results, regions, variables, samples, xss):
                     is_data = samples[histoName].get("is_data", False)
                     # renorm mcs
                     if not is_data:
-                        h = renorm(h, xss[sample], results[sample]["sumw"])
+                        h = renorm(h, xss[sample], results[sample]["sumw"], lumi)
 
                     tmp_histo = h[tuple(real_axis + [hist.loc("nom")])].copy()
                     hist_fold(tmp_histo, 3)
@@ -200,7 +201,7 @@ def post_process(results, regions, variables, samples, xss):
     fout.close()
 
 
-if __name__ == "__main__":
+def main():
     analysis_dict = get_analysis_dict()
     year = analysis_dict["year"]
     lumi = analysis_dict["lumi"]
@@ -211,8 +212,8 @@ if __name__ == "__main__":
     variables = analysis_dict["variables"]
 
     # FIXME use the first one
-    # with open(f"{path_fw}/data/samples/{year}.json") as file:
-    with open(path_fw + "/data/samples/samples.json", "r") as file:
+    # with open(path_fw + "/data/samples/samples.json", "r") as file:
+    with open(f"{path_fw}/data/{year}/samples/samples.json") as file:
         samples_xs = json.load(file)
 
     xss = {}
@@ -238,4 +239,8 @@ if __name__ == "__main__":
     results = read_chunks("condor/results_merged_new.pkl")
     print(results.keys())
     # sys.exit()
-    post_process(results, regions, variables, samples, xss)
+    post_process(results, regions, variables, samples, xss, nuisances, lumi)
+
+
+if __name__ == "__main__":
+    main()
