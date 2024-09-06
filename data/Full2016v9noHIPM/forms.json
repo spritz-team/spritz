@@ -1,5 +1,10 @@
 {
     "data": {
+        "Muon": {
+            "branches": [
+                "mvaTTH"
+            ]
+        },
         "HLT": {
             "branches": [
                 "Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",
@@ -31,6 +36,11 @@
         }
     },
     "mc": {
+        "Muon": {
+            "branches": [
+                "mvaTTH"
+            ]
+        },
         "HLT": {
             "branches": [
                 "Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ",

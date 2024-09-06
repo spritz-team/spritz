@@ -2,7 +2,7 @@ import json
 import random
 from math import ceil
 
-from spritz.framework.framework import write_chunks, get_analysis_dict
+from spritz.framework.framework import get_analysis_dict, write_chunks
 
 
 def split_chunks(num_entries):
@@ -27,10 +27,11 @@ def get_files(datasets):
     return datasets
 
 
-def create_chunks(datasets, max_chunks=None):
+def create_chunks(datasets):
     chunks = []
     for dataset in datasets:
         is_data = datasets[dataset].get("is_data", False)
+        max_chunks = datasets[dataset].get("max_chunks", None)
         files = datasets[dataset]["files"]
         dataset_dict = {
             k: v
@@ -67,7 +68,7 @@ def create_chunks(datasets, max_chunks=None):
 def main():
     datasets = get_analysis_dict()["datasets"]
     datasets = get_files(datasets)
-    chunks = create_chunks(datasets, max_chunks=None)
+    chunks = create_chunks(datasets)
     print("Now got", len(chunks), "chunks")
     write_chunks(chunks, "data/chunks.pkl")
 

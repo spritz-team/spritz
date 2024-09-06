@@ -60,7 +60,10 @@ def submit(
         # # "pccms04.hcms.it",
         # # "pccms08.hcms.it",
         # "pccms11.hcms.it",
-        # "pccms12.hcms.it",
+        "clipper.hcms.it",
+        "empire.hcms.it",
+        "pccms12.hcms.it",
+        "pccms13.hcms.it",
         # # "pccms14.hcms.it",
     ]
 

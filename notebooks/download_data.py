@@ -52,17 +52,18 @@ for ERA in config_eras:
                 "EcalDeadCellTriggerPrimitiveFilter",
                 "BadPFMuonFilter",
                 "BadPFMuonDzFilter",
-                "ecalBadCalibFilter",
                 "eeBadScFilter",
             ],
-            "eleWP": "mvaFall17V2Iso_WP90",
-            "muWP": "cut_Tight_HWWW",
             "leptonSF": f"RPLME_PATH_FW/data/{ERA}/clib/lepton_sf.json.gz",
             "puWeightsKey": f"Collisions{int(year_maps[ERA])-2000}_UltraLegacy_goldenJSON",
             "run_to_era": f"RPLME_PATH_FW/data/{ERA}/clib/run_to_era.json.gz",
             "do_theory_variations": False,
             "era": ERA,
         }
+
+        if "2016" not in ERA:
+            cfg["flags"].append("ecalBadCalibFilter")
+
         cfg["year"] = year_maps[ERA]
 
         cfg["jet_sel"] = {

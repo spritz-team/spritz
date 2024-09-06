@@ -1,6 +1,8 @@
+import json
+
 import awkward as ak
 import numpy as np
-from coffea.lookup_tools import txt_converters, rochester_lookup
+from coffea.lookup_tools import rochester_lookup, txt_converters
 
 
 def getRochester(cfg):
@@ -50,7 +52,21 @@ def correctRochester(events, is_data, rochester):
     mu_pt = muSF * muons.pt
 
     # remap to Lepton.pt
-    mu_pt = mu_pt[events.Lepton.muonIdx]
+    # print(ak.num(mu_pt))
+    # print(ak.num(events.Lepton.muonIdx))
+    # print(repr(mu_pt))
+    # print(repr(events.Lepton.muonIdx))
+
+    # d = {}
+    # d["mu_pt"] = ak.to_buffers(mu_pt)
+    # d["mu_idx"] = ak.to_buffers(events.Lepton.muonIdx)
+    # with open(
+    #     "/gwpool/users/gpizzati/spritz/configs/vbfz-2016pre/erred_arrays.json", "w"
+    # ) as file:
+    #     json.dump(d, file, indent=2)
+    mu_idx = ak.to_packed(events.Lepton.muonIdx)
+    # mu_pt = mu_pt[events.Lepton.muonIdx]
+    mu_pt = mu_pt[mu_idx]
     mu_mask = abs(events.Lepton.pdgId) == 13
 
     events[("Lepton", "pt")] = ak.where(mu_mask, mu_pt, events.Lepton.pt)

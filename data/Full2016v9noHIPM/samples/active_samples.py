@@ -34,4 +34,4 @@ for _, sd in DataRun:
         tag = pd + "_" + sd
         if "DoubleMuon" in pd and "Run2016G" in sd:
             tag = tag.replace("v1", "v2")
-        active_samples.append(pd + "_" + sd)
+        active_samples.append(tag)

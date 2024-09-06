@@ -1,7 +1,9 @@
 #!/bin/bash
 
+ERA="Full2017v9"
+job_id=0
 
-cd condor/job_0
+cd condor/job_${job_id}
 
 # configs/.../condor/job_0/tmp
 
@@ -10,7 +12,9 @@ cd tmp
 cp ../chunks_job.pkl .
 cp ../../run.sh .
 cp ../../../script_worker_dumper.py .
-cp ../../../../../data/Full2017v9/cfg.json .
+cp ../../../../../data/${ERA}/cfg.json .
 
-./run.sh
+./run.sh 
+cp results.pkl ../chunks_job.pkl
+echo "Run locally" > ../err.txt
 

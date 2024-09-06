@@ -6,9 +6,9 @@ import numpy as np
 from spritz.framework.framework import cmap_pastel, cmap_petroff
 
 year = "Full2017v9"
-# lumi = 7066.552169 / 1000
 lumi = 9.574029838  # ERA C of 2017
 plot_label = "VBF-Z"
+year_label = "2017"
 njobs = 500
 
 

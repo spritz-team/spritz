@@ -39,7 +39,8 @@ def read_inputs(inputs: list[str]) -> list[Result]:
         new_job_result = []
         if isinstance(job_result, list):
             for job_result_single in job_result:
-                new_job_result.append(job_result_single["result"]["real_results"])
+                if job_result_single["result"] != {}:
+                    new_job_result.append(job_result_single["result"]["real_results"])
 
             # job_result = new_job_result
             # if check_input(job_result):

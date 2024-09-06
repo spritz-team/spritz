@@ -6,9 +6,9 @@ import numpy as np
 from spritz.framework.framework import cmap_pastel, cmap_petroff
 
 year = "Full2016v9HIPM"
-# lumi = 7066.552169 / 1000
 lumi = 5829.427727 / 1000  # ERA B of 2016preVFP
 plot_label = "VBF-Z"
+year_label = "2016-HIPM"
 njobs = 500
 
 
@@ -65,42 +65,45 @@ datasets = {
         "task_weight": 8,
         "subsamples": subsamples_sig,
     },
-    "Int": {
-        "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
-    },
+    # "Int": {
+    #     "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
+    # },
     "DY_NLO": {
         "files": "DYJetsToLL_M-50",
         "task_weight": 8,
-        "weight": "0.5",
+        # "weight": "0.5",
         "subsamples": subsamples_dy,
     },
-    "DY-0J": {
-        "files": "DYJetsToLL_0J",
-        "task_weight": 8,
-        "weight": "0.5",
-        "subsamples": subsamples_dy,
-    },
-    "DY-1J": {
-        "files": "DYJetsToLL_1J",
-        "task_weight": 8,
-        "weight": "0.5",
-        "subsamples": subsamples_dy,
-    },
-    "DY-2J": {
-        "files": "DYJetsToLL_2J",
-        "task_weight": 8,
-        "weight": "0.5",
-        "subsamples": subsamples_dy,
-    },
+    # "DY-0J": {
+    #     "files": "DYJetsToLL_0J",
+    #     "task_weight": 8,
+    #     "weight": "0.5",
+    #     "subsamples": subsamples_dy,
+    # },
+    # "DY-1J": {
+    #     "files": "DYJetsToLL_1J",
+    #     "task_weight": 8,
+    #     "weight": "0.5",
+    #     "subsamples": subsamples_dy,
+    # },
+    # "DY-2J": {
+    #     "files": "DYJetsToLL_2J",
+    #     "task_weight": 8,
+    #     "weight": "0.5",
+    #     "subsamples": subsamples_dy,
+    # },
 }
 
+# FIXME limit DY chunks
+for dataset in datasets:
+    if "DY" in dataset:
+        datasets[dataset]["max_chunks"] = 500
 
 for dataset in datasets:
     datasets[dataset]["read_form"] = "mc"
 
 
 DataRun = [
-    ["B", "Run2016B-ver1_HIPM_UL2016-v2"],
     ["B", "Run2016B-ver2_HIPM_UL2016-v2"],
     ["C", "Run2016C-HIPM_UL2016-v2"],
     ["D", "Run2016D-HIPM_UL2016-v2"],
@@ -112,7 +115,7 @@ DataSets = ["SingleMuon", "SingleElectron", "DoubleEG", "DoubleMuon"]
 
 DataTrig = {
     "SingleMuon": "events.SingleMu",
-    "SingleElectron": "events.SingleEle",
+    "SingleElectron": "(~events.SingleMu) & events.SingleEle",
     "DoubleMuon": "(~events.SingleMu) & (~events.SingleEle) & events.DoubleMu",
     "DoubleEG": "(~events.SingleMu) & (~events.SingleEle) & (~events.DoubleMu) & events.DoubleEle",
 }
@@ -135,15 +138,16 @@ for era, sd in DataRun:
             "trigger_sel": DataTrig[pd],
             "read_form": "data",
             "is_data": True,
-            "era": "UL2016_preVFP{era}",
+            "era": f"UL2016_preVFP{era}",
         }
         samples_data.append(f"{pd}_{era}")
+
 
 samples = {}
 colors = {}
 
 samples["Data"] = {
-    "samples": [samples_data],
+    "samples": samples_data,
     "is_data": True,
 }
 
@@ -164,37 +168,37 @@ samples["Zjj_outfiducial"] = {
 }
 colors["Zjj_outfiducial"] = cmap_petroff[5]
 
-samples["Int"] = {
-    "samples": ["Int"],
-}
-colors["Int"] = cmap_petroff[4]
+# samples["Int"] = {
+#     "samples": ["Int"],
+# }
+# colors["Int"] = cmap_petroff[4]
 
 samples["DY_PU"] = {
     # "samples": ["DY_NLO_PU"],
     # "samples": [f"DY-{j}J_PU" for j in range(3)],
-    "samples": ["DY_NLO_PU"] + [f"DY-{j}J_PU" for j in range(3)],
+    "samples": ["DY_NLO_PU"]  # + [f"DY-{j}J_PU" for j in range(3)],
 }
 colors["DY_PU"] = cmap_petroff[3]
 samples["DY_hard"] = {
     # "samples": [f"DY-{j}J_hard" for j in range(3)],
-    "samples": ["DY_NLO_hard"] + [f"DY-{j}J_hard" for j in range(3)],
+    "samples": ["DY_NLO_hard"]  # + [f"DY-{j}J_hard" for j in range(3)],
 }
 
 colors["DY_hard"] = cmap_petroff[0]
 
-# samples["Zjj"]= {
-#     "samples": [f"Zjj_ptll_{i}" for i in range(len(bins["ptll"]) - 1)],
-#     "is_signal": True,
-# }
+samples["Zjj_fiducial"] = {
+    "samples": [f"Zjj_ptll_{i}" for i in range(len(bins["ptll"]) - 1)],
+    "is_signal": True,
+}
+colors["Zjj_fiducial"] = cmap_pastel[0]
 
-
-variable_to_unfold = "dphijj"
-for i in range(len(bins[variable]) - 1):
-    samples[f"Zjj_{variable}_{i}"] = {
-        "samples": [f"Zjj_{variable}_{i}"],
-        "is_signal": True,
-    }
-    colors[f"Zjj_{variable}_{i}"] = cmap_pastel[i]
+# variable_to_unfold = "dphijj"
+# for i in range(len(bins[variable_to_unfold]) - 1):
+#     samples[f"Zjj_{variable_to_unfold}_{i}"] = {
+#         "samples": [f"Zjj_{variable_to_unfold}_{i}"],
+#         "is_signal": True,
+#     }
+#     colors[f"Zjj_{variable_to_unfold}_{i}"] = cmap_pastel[i]
 
 
 # regions
@@ -263,7 +267,7 @@ variables["mjj"] = {
     "func": lambda events: ak.fill_none(
         (events.jets[:, 0] + events.jets[:, 1]).mass, -9999
     ),
-    # "axis": hist.axis.Regular(30, 200, 1500, name="mjj"),
+    "axis": hist.axis.Regular(30, 200, 1500, name="mjj"),
 }
 variables["ptjj"] = {
     "func": lambda events: ak.fill_none(
@@ -275,51 +279,51 @@ variables["detajj"] = {
     "func": lambda events: abs(
         ak.fill_none(events.jets[:, 0].deltaeta(events.jets[:, 1]), -9999)
     ),
-    # "axis": hist.axis.Regular(30, 0, 10, name="detajj"),
+    "axis": hist.axis.Regular(30, 0, 10, name="detajj"),
 }
 variables["dphijj"] = {
     "func": lambda events: abs(
         ak.fill_none(events.jets[:, 0].deltaphi(events.jets[:, 1]), -9999)
     ),
-    # "axis": hist.axis.Regular(30, 0, np.pi, name="dphijj"),
+    "axis": hist.axis.Regular(30, 0, np.pi, name="dphijj"),
 }
-variables["dphijj_noabs"] = {
-    "func": lambda events: abs(
-        ak.fill_none(events.jets[:, 0].deltaphi(events.jets[:, 1]), -9999)
-    ),
-    "axis": hist.axis.Regular(30, -2 * np.pi, 2 * np.pi, name="dphijj"),
-}
+# variables["dphijj_noabs"] = {
+#     "func": lambda events: abs(
+#         ak.fill_none(events.jets[:, 0].deltaphi(events.jets[:, 1]), -9999)
+#     ),
+#     "axis": hist.axis.Regular(30, -2 * np.pi, 2 * np.pi, name="dphijj"),
+# }
 
 # Single jet
 variables["ptj1"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 0].pt, -9999),
-    # "axis": hist.axis.Regular(30, 30, 150, name="ptj1"),
+    "axis": hist.axis.Regular(30, 30, 150, name="ptj1"),
 }
 variables["ptj2"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 1].pt, -9999),
-    # "axis": hist.axis.Regular(30, 30, 150, name="ptj2"),
+    "axis": hist.axis.Regular(30, 30, 150, name="ptj2"),
 }
 variables["etaj1"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 0].eta, -9999),
-    # "axis": hist.axis.Regular(30, -5, 5, name="etaj1"),
+    "axis": hist.axis.Regular(30, -5, 5, name="etaj1"),
 }
 variables["etaj2"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 1].eta, -9999),
-    # "axis": hist.axis.Regular(30, -5, 5, name="etaj2"),
+    "axis": hist.axis.Regular(30, -5, 5, name="etaj2"),
 }
 variables["phij1"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 0].phi, -9999),
-    # "axis": hist.axis.Regular(30, -np.pi, np.pi, name="phij1"),
+    "axis": hist.axis.Regular(30, -np.pi, np.pi, name="phij1"),
 }
 variables["phij2"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 1].phi, -9999),
-    # "axis": hist.axis.Regular(30, -np.pi, np.pi, name="phij2"),
+    "axis": hist.axis.Regular(30, -np.pi, np.pi, name="phij2"),
 }
 
 # Dilepton
 variables["mll"] = {
     "func": lambda events: (events.Lepton[:, 0] + events.Lepton[:, 1]).mass,
-    # "axis": hist.axis.Regular(20, 91 - 15, 91 + 15, name="mll"),
+    "axis": hist.axis.Regular(20, 91 - 15, 91 + 15, name="mll"),
 }
 variables["ptll"] = {
     "func": lambda events: (events.Lepton[:, 0] + events.Lepton[:, 1]).pt,
@@ -333,10 +337,10 @@ variables["dphill"] = {
     "func": lambda events: abs(events.Lepton[:, 0].deltaphi(events.Lepton[:, 1])),
     # "axis": hist.axis.Regular(30, 0, np.pi, name="dphill"),
 }
-variables["dphill_noabs"] = {
-    "func": lambda events: abs(events.Lepton[:, 0].deltaphi(events.Lepton[:, 1])),
-    "axis": hist.axis.Regular(30, -2 * np.pi, 2 * np.pi, name="dphill"),
-}
+# variables["dphill_noabs"] = {
+#     "func": lambda events: (events.Lepton[:, 0].deltaphi(events.Lepton[:, 1])),
+#     "axis": hist.axis.Regular(30, -2 * np.pi, 2 * np.pi, name="dphill"),
+# }
 
 # Single lepton
 variables["ptl1"] = {

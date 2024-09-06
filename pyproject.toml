@@ -26,7 +26,7 @@ spritz-checkerrors = "spritz.scripts.check_errors:main"
 spritz-merge = "spritz.scripts.merge:main"
 spritz-postproc = "spritz.scripts.post_process:main"
 spritz-plot = "spritz.scripts.plot:main"
-# mp-cards = "spritz.make_cards:main"
+spritz-cards = "spritz.scripts.make_cards:main"
 
 [tool.ruff]
 src = ["src/spritz"]

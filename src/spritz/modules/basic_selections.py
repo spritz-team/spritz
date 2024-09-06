@@ -14,6 +14,15 @@ def pass_trigger(events, year):
         for key in keys:
             tmp = ak.ones_like(events.weight) == 0.0  # all False
             for val in Trigger[year][era]["MC"][key]:
+                # some hlt flags are not present in some files for some eras
+                # e.g. DZ filters in '16
+                try:
+                    events.HLT[val[len("HLT_") :]]
+                except ak.errors.FieldNotFoundError:
+                    events[("HLT", val[len("HLT_") :])] = (
+                        ak.ones_like(events.weight) != 1.0
+                    )
+
                 tmp = tmp | events.HLT[val[len("HLT_") :]]
             events[key] = events[key] | (events.run_period == era) & tmp
 

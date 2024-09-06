@@ -1,5 +1,6 @@
 import concurrent.futures
 import glob
+import os
 import sys
 import traceback as tb
 
@@ -15,6 +16,8 @@ def bad_lines_fun(line):
     if line.startswith("user"):
         return False
     if line.startswith("sys"):
+        return False
+    if line == "Run locally":
         return False
     if (
         "could not instantiate session cipher using cipher public info from server"
@@ -36,9 +39,10 @@ def check_job(job_id):
         )
         error = "".join(tb.format_exception(None, e, e.__traceback__))
         print(error, file=sys.stderr)
-        return job_id
+        return job_id, True, error
     chunks_total = 0
     chunks_err = 0
+    erred_data = 0
     try:
         chunks = read_chunks(file)
         assert isinstance(chunks, list)
@@ -46,22 +50,27 @@ def check_job(job_id):
             chunks_total += 1
             if chunks[i]["result"] == {} and chunks[i]["error"] != "":
                 chunks_err += 1
+                if chunks[i]["is_data"]:
+                    erred_data += 1
                 break
         if chunks_total > 0 and chunks_err == 0:
-            ...
+            pass
         else:
             print("skipping job, should be retried")
-            return job_id
-    except Exception as _:
-        return job_id
+            return job_id, 1 + erred_data, "Error found in chunks:" + chunks[i]["error"]
+    except Exception as e:
+        return job_id, True, "".join(tb.format_exception(None, e, e.__traceback__))
 
-    with open(f"condor/{job_id}/err.txt") as file:
-        lines = file.read().split("\n")
-        bad_lines = list(filter(bad_lines_fun, lines))
-        if len(bad_lines) > 0:
-            print("\033[91m", job_id, "\033[0m")
-            print("\n".join(bad_lines))
-            return job_id
+    if os.path.exists(f"condor/{job_id}/err.txt"):
+        with open(f"condor/{job_id}/err.txt") as file:
+            lines = file.read().split("\n")
+            bad_lines = list(filter(bad_lines_fun, lines))
+            error = "\n".join(bad_lines)
+            if len(bad_lines) > 0:
+                # print("\033[91m", job_id, "\033[0m")
+                # print("\n".join(bad_lines))
+                return job_id, 2, error
+    return job_id, False, ""
 
 
 def main():
@@ -77,8 +86,12 @@ def main():
         failed = []
         for task in tasks:
             res = task.result()
-            if res:
-                failed.append(res)
+            if res[1] > 0:
+                failed.append(res[0])
+                # print(res[2])
+            if res[1] == 2:
+                print("Real error!", res[0])
+
         print(sorted(failed))
         print("queue 1 Folder in " + " ".join(sorted(failed)))
         print("Failed", len(failed))

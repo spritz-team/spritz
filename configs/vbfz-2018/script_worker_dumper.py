@@ -79,7 +79,7 @@ def process(events, **kwargs):
     era = kwargs.get("era", None)
     isData = kwargs.get("is_data", False)
     subsamples = kwargs.get("subsamples", {})
-    special_weight = kwargs.get("weight", "1.0")
+    special_weight = eval(kwargs.get("weight", "1.0"))
 
     # variations = {}
     # variations["nom"] = [()]
@@ -97,6 +97,12 @@ def process(events, **kwargs):
 
     sumw = ak.sum(events.weight)
     nevents = ak.num(events.weight, axis=0)
+
+    # Add special weight for each dataset (not subsamples)
+    if special_weight != 1.0:
+        print(f"Using special weight for {dataset}: {special_weight}")
+
+    events["weight"] = events.weight * special_weight
 
     # pass trigger and flags
     events = assign_run(events, isData, cfg, ceval_assign_run)
@@ -170,8 +176,8 @@ def process(events, **kwargs):
         )
         if doTheoryVariations:
             events, variations = theory_unc(events, variations)
-    # else:
-    #     events = correct_jets_data(events, cfg, era)
+    else:
+        events = correct_jets_data(events, cfg, era)
 
     # regions = get_regions()
     # categories = ["ee", "mm"]
@@ -237,9 +243,6 @@ def process(events, **kwargs):
     jet_pt_backup = ak.copy(events.Jet.pt)
 
     # FIXME add FakeW
-
-    # Add special weight for each dataset (not subsamples)
-    events["weight"] = events.weight * eval(special_weight)
 
     print("Doing variations")
     # for variation in sorted(list(variations.keys())):
@@ -540,6 +543,7 @@ if __name__ == "__main__":
         #     continue
         print(new_chunk["data"]["dataset"])
 
+        # FIXME run only on data
         # if not new_chunk["data"].get("is_data", False):
         #     continue
 
@@ -556,6 +560,7 @@ if __name__ == "__main__":
             new_chunks[i]["error"] = nice_exception
             # result = None
 
+        # FIXME run only on first chunk
         # if i >= 1:
         #     break
 

@@ -112,7 +112,7 @@ def make_datacard(
         file.write(datacard)
 
 
-if __name__ == "__main__":
+def main():
     path = os.path.abspath("analysis")
     print("Working in analysis path:", path)
     sys.path.insert(0, path)
@@ -135,3 +135,7 @@ if __name__ == "__main__":
                 nuisances,
                 samples,
             )
+
+
+if __name__ == "__main__":
+    main()

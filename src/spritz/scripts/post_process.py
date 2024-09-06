@@ -211,8 +211,6 @@ def main():
     regions = analysis_dict["regions"]
     variables = analysis_dict["variables"]
 
-    # FIXME use the first one
-    # with open(path_fw + "/data/samples/samples.json", "r") as file:
     with open(f"{path_fw}/data/{year}/samples/samples.json") as file:
         samples_xs = json.load(file)
 
@@ -223,9 +221,9 @@ def main():
         key = datasets[dataset]["files"]
         print(key)
 
-        # FIXME
-        if "DY" in dataset:
-            samples_xs["samples"][key]["xsec"] += "*0.5"
+        # # FIXME
+        # if "DY" in dataset:
+        #     samples_xs["samples"][key]["xsec"] += "*0.829"
 
         if "subsamples" in datasets[dataset]:
             for sub in datasets[dataset]["subsamples"]:

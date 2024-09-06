@@ -172,6 +172,7 @@ def correct_jets_mc(events, variations, cfg, run_variations=False):
     cset_jersmear = cset_jersmear[key]
 
     events_jme = ak.copy(events)
+
     # Many operatorions to get event seed
     runnum = events_jme.run << 20
     luminum = events_jme.luminosityBlock << 10
@@ -261,10 +262,37 @@ def correct_jets_mc(events, variations, cfg, run_variations=False):
 
 def correct_jets_data(events, cfg, era):
     cset_jerc = correctionlib.CorrectionSet.from_file(cfg["jet_jerc"])
-    cset_jersmear = correctionlib.CorrectionSet.from_file(cfg["jer_smear"])
     jme_cfg = cfg["jme"]
 
-    jec_tag = jme_cfg["data"][era]
-
+    jec_tag = jme_cfg["jec_tag"]["data"][era]
     key = "{}_{}_{}".format(jec_tag, jme_cfg["lvl_compound"], jme_cfg["jet_algo"])
-    sf_cset = cset_jerc.compound[key]
+    cset_jec = cset_jerc.compound[key]
+
+    events_jme = ak.copy(events)
+
+    jet_map = {
+        "jet_pt": events_jme.Jet.pt,
+        "jet_mass": events_jme.Jet.mass,
+        "jet_pt_raw": events_jme.Jet.pt * (1.0 - events_jme.Jet.rawFactor),
+        "jet_mass_raw": events_jme.Jet.mass * (1.0 - events_jme.Jet.rawFactor),
+        "jet_eta": events_jme.Jet.eta,
+        "jet_phi": events_jme.Jet.phi,
+        "jet_area": events_jme.Jet.area,
+        "rho": ak.broadcast_arrays(
+            events_jme.fixedGridRhoFastjetAll, events_jme.Jet.pt
+        )[0],
+    }
+
+    sf_jec = cset_jec.evaluate(
+        jet_map["jet_area"],
+        jet_map["jet_eta"],
+        jet_map["jet_pt_raw"],
+        jet_map["rho"],
+    )
+
+    jet_map["jet_pt"] = jet_map["jet_pt_raw"] * sf_jec
+    jet_map["jet_mass"] = jet_map["jet_mass_raw"] * sf_jec
+
+    events[("Jet", "pt")] = jet_map["jet_pt"]
+    events[("Jet", "mass")] = jet_map["jet_mass"]
+    return events

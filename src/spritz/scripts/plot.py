@@ -29,7 +29,7 @@ def darker_color(color):
     return tuple(rgb)
 
 
-def plot(input_file, region, variable, samples, nuisances, lumi, colors):
+def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_label):
     print("Doing ", region, variable)
 
     histos = {}
@@ -126,7 +126,7 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors):
     )  # figsize=(5,5), dpi=200)
     fig.tight_layout(pad=-0.5)
     hep.cms.label(
-        region, data=True, lumi=round(lumi, 2), ax=ax[0], year="Run-II"
+        region, data=True, lumi=round(lumi, 2), ax=ax[0], year=year_label
     )  # ,fontsize=16)
     # for i, histoName in enumerate(["Top", "DY", "Zjj", "Data"]):
     for i, histoName in enumerate(histos.keys()):
@@ -279,6 +279,7 @@ def main():
     # plots = analysis_dict["plots"]
     # scales = analysis_dict["scales"]
     plot_label = analysis_dict["plot_label"]
+    year_label = analysis_dict.get("year_label", "Run-II")
     lumi = analysis_dict["lumi"]
     # plot_ylim_ratio = analysis_dict["plot_ylim_ratio"]
     print("Doing plots")
@@ -311,7 +312,16 @@ def main():
         for variable in variables:
             if "axis" not in variables[variable]:
                 continue
-            plot(input_file, region, variable, samples, nuisances, lumi, colors)
+            plot(
+                input_file,
+                region,
+                variable,
+                samples,
+                nuisances,
+                lumi,
+                colors,
+                year_label,
+            )
 
 
 if __name__ == "__main__":

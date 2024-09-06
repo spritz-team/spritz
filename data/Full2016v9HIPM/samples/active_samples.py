@@ -22,7 +22,6 @@ active_samples = [
 ]
 
 DataRun = [
-    ["B", "Run2016B-ver1_HIPM_UL2016-v2"],
     ["B", "Run2016B-ver2_HIPM_UL2016-v2"],
     ["C", "Run2016C-HIPM_UL2016-v2"],
     ["D", "Run2016D-HIPM_UL2016-v2"],

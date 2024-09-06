@@ -5,10 +5,10 @@ import hist
 import numpy as np
 from spritz.framework.framework import cmap_pastel, cmap_petroff
 
-year = "Full2018v9"
-lumi = 7066.552169 / 1000
+year = "Full2016v9noHIPM"
+lumi = 7653.261227 / 1000  # ERA G of 2016postVFP
 plot_label = "VBF-Z"
-year_label = "2018"
+year_label = "2016-noHIPM"
 njobs = 500
 
 
@@ -104,18 +104,19 @@ for dataset in datasets:
 
 
 DataRun = [
-    ["A", "Run2018A-UL2018-v1"],
-    ["B", "Run2018B-UL2018-v1"],
-    ["C", "Run2018C-UL2018-v1"],
-    ["D", "Run2018D-UL2018-v1"],
+    ["F", "Run2016F-UL2016-v1"],
+    ["G", "Run2016G_UL2016-v1"],
+    ["H", "Run2016H_UL2016-v1"],
 ]
 
-DataSets = ["SingleMuon", "EGamma", "DoubleMuon"]
+DataSets = ["SingleMuon", "SingleElectron", "DoubleMuon", "DoubleEG"]
+
 
 DataTrig = {
-    "DoubleMuon": "events.DoubleMu",
-    "SingleMuon": "(~events.DoubleMu) & events.SingleMu",
-    "EGamma": "(~events.DoubleMu) & (~events.SingleMu) & (events.SingleEle | events.DoubleEle)",
+    "SingleMuon": "events.SingleMu",
+    "SingleElectron": "(~events.SingleMu) & events.SingleEle",
+    "DoubleMuon": "(~events.SingleMu) & (~events.SingleEle) & events.DoubleMu",
+    "DoubleEG": "(~events.SingleMu) & (~events.SingleEle) & (~events.DoubleMu) & events.DoubleEle",
 }
 
 
@@ -125,16 +126,10 @@ for era, sd in DataRun:
         tag = pd + "_" + sd
 
         # FIXME limit to only first era
-        if era != "B":
+        if era != "G":
             continue
 
-        if (
-            ("DoubleMuon" in pd and "Run2018B" in sd)
-            or ("DoubleMuon" in pd and "Run2018D" in sd)
-            or ("SingleMuon" in pd and "Run2018A" in sd)
-            or ("SingleMuon" in pd and "Run2018B" in sd)
-            or ("SingleMuon" in pd and "Run2018C" in sd)
-        ):
+        if "DoubleMuon" in pd and "Run2016G" in sd:
             tag = tag.replace("v1", "v2")
 
         datasets[f"{pd}_{era}"] = {
@@ -142,7 +137,7 @@ for era, sd in DataRun:
             "trigger_sel": DataTrig[pd],
             "read_form": "data",
             "is_data": True,
-            "era": f"UL2018{era}",
+            "era": f"UL2016_postVFP{era}",
         }
         samples_data.append(f"{pd}_{era}")
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-ERA="Full2018v9"
-job_id=99
+ERA="Full2016v9noHIPM"
+job_id=0
 
 cd condor/job_${job_id}
 

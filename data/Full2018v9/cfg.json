@@ -7,11 +7,9 @@
     "EcalDeadCellTriggerPrimitiveFilter",
     "BadPFMuonFilter",
     "BadPFMuonDzFilter",
-    "ecalBadCalibFilter",
-    "eeBadScFilter"
+    "eeBadScFilter",
+    "ecalBadCalibFilter"
   ],
-  "eleWP": "mvaFall17V2Iso_WP90",
-  "muWP": "cut_Tight_HWWW",
   "leptonSF": "RPLME_PATH_FW/data/Full2018v9/clib/lepton_sf.json.gz",
   "puWeightsKey": "Collisions18_UltraLegacy_goldenJSON",
   "run_to_era": "RPLME_PATH_FW/data/Full2018v9/clib/run_to_era.json.gz",

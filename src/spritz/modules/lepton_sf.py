@@ -1,7 +1,7 @@
-from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 import awkward as ak
 import numpy as np
 import spritz.framework.variation as variation_module
+from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 
 
 def lepton_sf(events, variations, ceval_lepton_sf, cfg):
@@ -46,19 +46,20 @@ def lepton_sf(events, variations, ceval_lepton_sf, cfg):
 
     sfs_dict["ele_wp"] = {
         "wrap": correctionlib_wrapper(ceval_lepton_sf["Electron_WP_SF"]),
-        "mask": ele_mask & events.Lepton["isTightElectron_" + cfg["eleWP"]],
+        "mask": ele_mask
+        & events.Lepton["isTightElectron_" + cfg["leptonsWP"]["eleWP"]],
         "output": "ele_id_iso_sf",
     }
 
     sfs_dict["muon_id"] = {
         "wrap": correctionlib_wrapper(ceval_lepton_sf["Muon_IdSF"]),
-        "mask": mu_mask & events.Lepton["isTightMuon_" + cfg["muWP"]],
+        "mask": mu_mask & events.Lepton["isTightMuon_" + cfg["leptonsWP"]["muWP"]],
         "output": "muon_id_sf",
     }
 
     sfs_dict["muon_iso"] = {
         "wrap": correctionlib_wrapper(ceval_lepton_sf["Muon_IsoSF"]),
-        "mask": mu_mask & events.Lepton["isTightMuon_" + cfg["muWP"]],
+        "mask": mu_mask & events.Lepton["isTightMuon_" + cfg["leptonsWP"]["muWP"]],
         "output": "muon_iso_sf",
     }
 
