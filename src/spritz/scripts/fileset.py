@@ -4,8 +4,6 @@ import sys
 
 from dbs.apis.dbsClient import DbsApi
 from spritz.framework.framework import get_analysis_dict, get_fw_path
-
-# from coffea.dataset_tools import rucio_utils
 from spritz.utils import rucio_utils
 from spritz.utils.utils import print_debug
 

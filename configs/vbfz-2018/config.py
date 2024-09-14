@@ -1,15 +1,22 @@
 # ruff: noqa: E501
 
+import json
+
 import awkward as ak
 import hist
 import numpy as np
-from spritz.framework.framework import cmap_pastel, cmap_petroff
+from spritz.framework.framework import cmap_pastel, cmap_petroff, get_fw_path
+
+fw_path = get_fw_path()
+with open(f"{fw_path}/data/common/lumi.json") as file:
+    lumis = json.load(file)
 
 year = "Full2018v9"
-lumi = 7066.552169 / 1000
+# lumi = lumis[year]["B"] / 1000  # ERA C of 2017
+lumi = lumis[year]["tot"] / 1000  # All of 2017
 plot_label = "VBF-Z"
 year_label = "2018"
-njobs = 500
+njobs = 200
 
 
 dnn_path = "/gwpool/users/gpizzati/test_processor/my_processor/notebooks/output_model"
@@ -31,10 +38,10 @@ subsamples_dy = {
 
 bins = {
     "ptll": np.linspace(0, 200, 5),
-    "dphill": np.linspace(0, 3.14, 10),
-    "dphijj": np.linspace(0, 3.14, 10),
-    "mjj": np.linspace(200, 3000, 5),
-    "detajj": np.linspace(0, 8, 8),
+    # "dphill": np.linspace(0, 3.14, 10),
+    # "dphijj": np.linspace(0, 3.14, 10),
+    # "mjj": np.linspace(200, 3000, 5),
+    # "detajj": np.linspace(0, 8, 8),
 }
 
 subsamples_sig = {}
@@ -94,10 +101,30 @@ datasets = {
     # },
 }
 
+# datasets["TT"] = {
+#     "files": "TTTo2L2Nu",
+#     "task_weight": 8,
+#     "top_pt_rwgt": True,
+# }
+
+# for i, sample in enumerate(
+#     [
+#         "ST_s-channel",
+#         "ST_t-channel_antitop",
+#         "ST_t-channel_top",
+#         "ST_tW_antitop",
+#         "ST_tW_top",
+#     ]
+# ):
+#     datasets[f"single_top_{i}"] = {
+#         "files": sample,
+#         "task_weight": 8,
+#     }
+
 # FIXME limit DY chunks
 for dataset in datasets:
     if "DY" in dataset:
-        datasets[dataset]["max_chunks"] = 500
+        datasets[dataset]["max_chunks"] = 1000
 
 for dataset in datasets:
     datasets[dataset]["read_form"] = "mc"
@@ -124,9 +151,9 @@ for era, sd in DataRun:
     for pd in DataSets:
         tag = pd + "_" + sd
 
-        # FIXME limit to only first era
-        if era != "B":
-            continue
+        # # FIXME limit to only first era
+        # if era != "B":
+        #     continue
 
         if (
             ("DoubleMuon" in pd and "Run2018B" in sd)
@@ -180,12 +207,14 @@ colors["Zjj_outfiducial"] = cmap_petroff[5]
 samples["DY_PU"] = {
     # "samples": ["DY_NLO_PU"],
     # "samples": [f"DY-{j}J_PU" for j in range(3)],
-    "samples": ["DY_NLO_PU"]  # + [f"DY-{j}J_PU" for j in range(3)],
+    # "samples": ["DY_NLO_PU"] + [f"DY-{j}J_PU" for j in range(3)],
+    "samples": ["DY_NLO_PU"],
 }
 colors["DY_PU"] = cmap_petroff[3]
 samples["DY_hard"] = {
     # "samples": [f"DY-{j}J_hard" for j in range(3)],
-    "samples": ["DY_NLO_hard"]  # + [f"DY-{j}J_hard" for j in range(3)],
+    # "samples": ["DY_NLO_hard"] + [f"DY-{j}J_hard" for j in range(3)],
+    "samples": ["DY_NLO_hard"],
 }
 
 colors["DY_hard"] = cmap_petroff[0]
@@ -196,7 +225,7 @@ samples["Zjj_fiducial"] = {
 }
 colors["Zjj_fiducial"] = cmap_pastel[0]
 
-# variable_to_unfold = "detajj"
+# variable_to_unfold = "mjj"
 # for i in range(len(bins[variable_to_unfold]) - 1):
 #     samples[f"Zjj_{variable_to_unfold}_{i}"] = {
 #         "samples": [f"Zjj_{variable_to_unfold}_{i}"],
@@ -216,14 +245,14 @@ regions["sr_inc_ee"] = {
     "mask": 0,
     "btagging": "bVeto",
 }
-# regions["sr_inc_mm"] = {
-#     "func": lambda events: (abs(events.mll - 91) < 15)
-#     & (events.ptj1 > 50)
-#     & (events.ptj2 > 50)
-#     & events.mm,
-#     "mask": 0,
-#     "btagging": "bVeto",
-# }
+regions["sr_inc_mm"] = {
+    "func": lambda events: (abs(events.mll - 91) < 15)
+    & (events.ptj1 > 50)
+    & (events.ptj2 > 50)
+    & events.mm,
+    "mask": 0,
+    "btagging": "bVeto",
+}
 
 # regions["sr_high_dnn"] = {
 #     "func": lambda events: (abs(events.mll - 91) < 15)
@@ -253,15 +282,15 @@ regions["dypu_cr_ee"] = {
     "btagging": "bVeto",
 }
 
-# regions["dypu_cr_mm"] = {
-#     "func": lambda events: (
-#         (abs(events.mll - 91) < 15)
-#         & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
-#         & events.mm
-#     ),
-#     "mask": 0,
-#     "btagging": "bVeto",
-# }
+regions["dypu_cr_mm"] = {
+    "func": lambda events: (
+        (abs(events.mll - 91) < 15)
+        & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
+        & events.mm
+    ),
+    "mask": 0,
+    "btagging": "bVeto",
+}
 
 
 variables = {}
@@ -327,19 +356,19 @@ variables["phij2"] = {
 # Dilepton
 variables["mll"] = {
     "func": lambda events: (events.Lepton[:, 0] + events.Lepton[:, 1]).mass,
-    "axis": hist.axis.Regular(20, 91 - 15, 91 + 15, name="mll"),
+    "axis": hist.axis.Regular(50, 91 - 18, 91 + 18, name="mll"),
 }
 variables["ptll"] = {
     "func": lambda events: (events.Lepton[:, 0] + events.Lepton[:, 1]).pt,
-    # "axis": hist.axis.Regular(30, 0, 150, name="ptll"),
+    "axis": hist.axis.Regular(30, 0, 150, name="ptll"),
 }
 variables["detall"] = {
     "func": lambda events: abs(events.Lepton[:, 0].deltaeta(events.Lepton[:, 1])),
-    # "axis": hist.axis.Regular(20, 0, 10, name="detall"),
+    "axis": hist.axis.Regular(20, 0, 10, name="detall"),
 }
 variables["dphill"] = {
     "func": lambda events: abs(events.Lepton[:, 0].deltaphi(events.Lepton[:, 1])),
-    # "axis": hist.axis.Regular(30, 0, np.pi, name="dphill"),
+    "axis": hist.axis.Regular(30, 0, np.pi, name="dphill"),
 }
 # variables["dphill_noabs"] = {
 #     "func": lambda events: (events.Lepton[:, 0].deltaphi(events.Lepton[:, 1])),
@@ -349,27 +378,27 @@ variables["dphill"] = {
 # Single lepton
 variables["ptl1"] = {
     "func": lambda events: events.Lepton[:, 0].pt,
-    # "axis": hist.axis.Regular(30, 15, 150, name="ptl1"),
+    "axis": hist.axis.Regular(30, 15, 150, name="ptl1"),
 }
 variables["ptl2"] = {
     "func": lambda events: events.Lepton[:, 1].pt,
-    # "axis": hist.axis.Regular(30, 15, 150, name="ptl2"),
+    "axis": hist.axis.Regular(30, 15, 150, name="ptl2"),
 }
 variables["etal1"] = {
     "func": lambda events: events.Lepton[:, 0].eta,
-    # "axis": hist.axis.Regular(30, -2.5, 2.5, name="etal1"),
+    "axis": hist.axis.Regular(30, -2.5, 2.5, name="etal1"),
 }
 variables["etal2"] = {
     "func": lambda events: events.Lepton[:, 1].eta,
-    # "axis": hist.axis.Regular(30, -2.5, 2.5, name="etal2"),
+    "axis": hist.axis.Regular(30, -2.5, 2.5, name="etal2"),
 }
 variables["phil1"] = {
     "func": lambda events: events.Lepton[:, 0].phi,
-    # "axis": hist.axis.Regular(30, -np.pi, np.pi, name="phil1"),
+    "axis": hist.axis.Regular(30, -np.pi, np.pi, name="phil1"),
 }
 variables["phil2"] = {
     "func": lambda events: events.Lepton[:, 1].phi,
-    # "axis": hist.axis.Regular(30, -np.pi, np.pi, name="phil2"),
+    "axis": hist.axis.Regular(30, -np.pi, np.pi, name="phil2"),
 }
 
 # variables["Zeppenfeld_l1"] = {
@@ -393,7 +422,7 @@ variables["Zeppenfeld_Z"] = {
         ),
         -9999.0,
     ),
-    # "axis": hist.axis.Regular(30, 0, 3, name="Zeppenfeld_Z"),
+    "axis": hist.axis.Regular(30, 0, 3, name="Zeppenfeld_Z"),
 }
 
 # variables["Zeppenfeld_Z"] = {
@@ -421,7 +450,7 @@ variables["Zeppenfeld_Z"] = {
 
 variables["MET"] = {
     "func": lambda events: events.PuppiMET.pt,
-    # "axis": hist.axis.Regular(30, 0, 150, name="MET"),
+    "axis": hist.axis.Regular(30, 0, 150, name="MET"),
 }
 
 # variables["weight"] = {
@@ -441,13 +470,13 @@ variables["dnn"] = {
     )
 }
 
-for variable_to_unfold in bins:
-    variables[f"dnn_{variable_to_unfold}"] = {
-        "axis": [
-            hist.axis.Regular(10, 0, 1, name="dnn"),
-            hist.axis.Variable(bins[variable_to_unfold], name=variable_to_unfold),
-        ]
-    }
+# for variable_to_unfold in bins:
+#     variables[f"dnn_{variable_to_unfold}"] = {
+#         "axis": [
+#             hist.axis.Regular(10, 0, 1, name="dnn"),
+#             hist.axis.Variable(bins[variable_to_unfold], name=variable_to_unfold),
+#         ]
+#     }
 
 # variables["dnn_mjj"] = {
 #     "axis": [
@@ -492,4 +521,33 @@ nuisances = {
         "type": "lnN",
         "samples": dict((skey, "1.02") for skey in samples),
     },
+}
+
+
+nuisances["DY_hard_norm"] = {
+    "name": "CMS_DY_hard_norm",
+    "samples": {
+        "DY_hard": "1.00",
+    },
+    "type": "rateParam",
+    "cuts": [k for k in regions],
+}
+
+nuisances["DY_PU_norm"] = {
+    "name": "CMS_DY_PU_norm",
+    "samples": {
+        "DY_PU": "1.00",
+    },
+    "type": "rateParam",
+    "cuts": [k for k in regions],
+}
+
+## Use the following if you want to apply the automatic combine MC stat nuisances.
+nuisances["stat"] = {
+    "type": "auto",
+    "maxPoiss": "10",
+    "includeSignal": "0",
+    #  nuisance ['maxPoiss'] =  Number of threshold events for Poisson modelling
+    #  nuisance ['includeSignal'] =  Include MC stat nuisances on signal processes (1=True, 0=False)
+    "samples": {},
 }

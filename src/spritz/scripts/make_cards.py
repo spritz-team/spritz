@@ -45,6 +45,8 @@ def make_datacard(
     systs = {}
 
     h_data = 0
+    enable_stat = False
+    extra_lines = []
     for sample_name in samples:
         final_name = f"{region}/{variable}/histo_{sample_name}"
         h = input_file[final_name].to_hist().copy()
@@ -70,12 +72,39 @@ def make_datacard(
             histo_view = h.view(True)
             histo_view.variance = np.zeros_like(histo_view.variance)
 
+        output_file[f"histo_{name}"] = h
+        if is_data:
+            continue
+
         rows[0].append(bin_name)
         rows[1].append(name)
         rows[2].append(str(idx))
         rows[3].append(str(np.sum(h.values(True))))
 
         for systematic in nuisances:
+            if nuisances[systematic]["type"] == "auto":
+                enable_stat = True
+                continue
+            if nuisances[systematic]["type"] == "rateParam":
+                print("\n\ndebug")
+                if (
+                    "samples" in nuisances[systematic]
+                    and sample_name not in nuisances[systematic]["samples"]
+                ):
+                    continue
+                if (
+                    "cuts" in nuisances[systematic]
+                    and region not in nuisances[systematic]["cuts"]
+                ):
+                    print(region, nuisances[systematic]["cuts"])
+                    continue
+                extra_lines.append(
+                    f'{nuisances[systematic]["name"]} rateParam '
+                    f'{bin_name} {sample_name} '  # FIXME should use region?
+                    f'{nuisances[systematic]["samples"][sample_name]}'
+                )
+                print("\n\ndjaksjdkasjdska")
+                continue
             if sample_name in nuisances[systematic]["samples"]:
                 if nuisances[systematic]["type"] == "lnN":
                     syst = nuisances[systematic]["samples"][sample_name]
@@ -92,8 +121,6 @@ def make_datacard(
             else:
                 systs[systematic].append(syst)
 
-        output_file[f"histo_{name}"] = h
-
     if isinstance(h_data, int):
         h_data = h.copy()
         histo_view = h_data.view(True)
@@ -105,9 +132,13 @@ def make_datacard(
         datacard += "\t".join(row) + "\n"
 
     datacard += "-" * 100 + "\n"
-
     for syst in systs:
         datacard += nuisances[syst]["name"] + "\t" + "\t".join(systs[syst]) + "\n"
+    if enable_stat:
+        extra_lines.append(f"{bin_name} autoMCStats 10 0 1")
+    for line in extra_lines:
+        datacard += line + "\n"
+
     with open(f"{output_path}/datacard.txt", "w") as file:
         file.write(datacard)
 

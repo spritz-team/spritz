@@ -30,6 +30,9 @@ def bad_lines_fun(line):
 def check_job(job_id):
     file = f"condor/{job_id}/chunks_job.pkl"
     file_backup = f"condor/{job_id}/chunks_job_original.pkl"
+
+    if not os.path.exists(f"condor/{job_id}/err.txt"):
+        return job_id, -1, ""
     try:
         chunks_backup = read_chunks(file_backup)
     except Exception as e:
@@ -84,6 +87,8 @@ def main():
             tasks.append(pool.submit(check_job, job_id))
         concurrent.futures.wait(tasks)
         failed = []
+        running = 0
+        total = 0
         for task in tasks:
             res = task.result()
             if res[1] > 0:
@@ -91,11 +96,17 @@ def main():
                 # print(res[2])
             if res[1] == 2:
                 print("Real error!", res[0])
+            if res[1] == -1:
+                running += 1
+            total += 1
 
+        print("Failed jobs")
         print(sorted(failed))
         print("queue 1 Folder in " + " ".join(sorted(failed)))
+        print("\n")
         print("Failed", len(failed))
-        print("Total", len(failed))
+        print("Total", total)
+        print("Still running", running)
 
 
 if __name__ == "__main__":

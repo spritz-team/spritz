@@ -2,9 +2,12 @@ from typing import NewType
 
 import awkward as ak
 import spritz.framework.variation as variation
-from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 
 correctionlib_evaluator = NewType("correctionlib_evaluator", any)
+
+
+def correctionlib_wrapper(ceval):
+    return ceval.evaluate
 
 
 def format_rule(column, variation_name):

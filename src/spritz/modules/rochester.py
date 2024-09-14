@@ -24,14 +24,17 @@ def correctRochester(events, is_data, rochester):
             muons["charge"], muons["pt"], muons["eta"], muons["phi"]
         )
     else:
-        muons["genPartIdx"] = ak.mask(muons.genPartIdx, muons.genPartIdx >= 0)
+        muons["right_genPartIdx"] = ak.mask(
+            muons.genPartIdx,
+            (muons.genPartIdx >= 0) & (muons.genPartIdx < ak.num(events.GenPart)),
+        )
         # if reco pt has corresponding gen pt
         mcSF1 = rochester.kSpreadMC(
             muons["charge"],
             muons["pt"],
             muons["eta"],
             muons["phi"],
-            events.GenPart[muons.genPartIdx].pt,
+            events.GenPart[muons.right_genPartIdx].pt,
         )
         # if reco pt has no corresponding gen pt
         counts = ak.num(muons["pt"])

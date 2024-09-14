@@ -1,6 +1,8 @@
 src/data/*/samples_latinos**
-**root
-**png
+**.root
+**.png
+**.pkl
+**.out
 **__pycache__
 special_start.sh
 src/spritz/__version__.py

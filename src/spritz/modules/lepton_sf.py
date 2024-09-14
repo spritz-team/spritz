@@ -1,7 +1,10 @@
 import awkward as ak
 import numpy as np
 import spritz.framework.variation as variation_module
-from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
+
+
+def correctionlib_wrapper(ceval):
+    return ceval.evaluate
 
 
 def lepton_sf(events, variations, ceval_lepton_sf, cfg):

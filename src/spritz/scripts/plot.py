@@ -49,12 +49,16 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
         histo["stat_up"] = h.values() + stat
         histo["stat_down"] = h.values() - stat
         for nuisance in nuisances:
+            if nuisances[nuisance]["type"] == "rateParam":
+                continue
+            if nuisances[nuisance]["type"] == "auto":
+                continue
+            if nuisances[nuisance]["type"] == "stat":
+                continue
             name = nuisances[nuisance]["name"]
             if sample not in nuisances[nuisance]["samples"]:
                 continue
 
-            if nuisances[nuisance]["type"] == "stat":
-                continue
             elif nuisances[nuisance]["type"] == "lnN":
                 scaling = float(nuisances[nuisance]["samples"][sample])
                 histo[f"{name}_up"] = scaling * h.values()

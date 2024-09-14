@@ -1,3 +1,4 @@
+import fnmatch
 import json
 
 import hist
@@ -221,14 +222,25 @@ def main():
         key = datasets[dataset]["files"]
         print(key)
 
-        # # FIXME
+        # # # FIXME
         # if "DY" in dataset:
-        #     samples_xs["samples"][key]["xsec"] += "*0.829"
+        #     samples_xs["samples"][key]["xsec"] += "*0.5"
 
         if "subsamples" in datasets[dataset]:
             for sub in datasets[dataset]["subsamples"]:
                 flat_dataset = f"{dataset}_{sub}"
+                # if fnmatch.fnmatch(flat_dataset, "DY*PU"):
+                #     xss[flat_dataset] = (
+                #         eval(samples_xs["samples"][key]["xsec"]) * 7.7647e-01
+                #     )
+                # elif fnmatch.fnmatch(flat_dataset, "DY*hard"):
+                #     xss[flat_dataset] = (
+                #         eval(samples_xs["samples"][key]["xsec"]) * 9.2941e-01
+                #     )
+                # else:
+                #     xss[flat_dataset] = eval(samples_xs["samples"][key]["xsec"])
                 xss[flat_dataset] = eval(samples_xs["samples"][key]["xsec"])
+                print(flat_dataset, xss[flat_dataset])
         else:
             flat_dataset = dataset
             xss[flat_dataset] = eval(samples_xs["samples"][key]["xsec"])

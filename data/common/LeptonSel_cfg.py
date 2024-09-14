@@ -1,3 +1,4 @@
+# ruff: noqa : E501
 ElectronWP = {
     "Full2018v9": {
         ## ------------

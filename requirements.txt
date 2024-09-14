@@ -1,0 +1,17 @@
+# using python3.10
+uproot
+awkward
+numpy
+vector
+pandas
+correctionlib
+onnxruntime
+hist
+matplotlib
+xrootd
+fsspec-xrootd
+requests
+cloudpickle
+dbs3-client
+rucio-clients
+dask==2024.5.1 # just for coffea...

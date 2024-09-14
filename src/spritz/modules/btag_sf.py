@@ -1,6 +1,10 @@
-from coffea.lookup_tools.correctionlib_wrapper import correctionlib_wrapper
 import awkward as ak
 import spritz.framework.variation as variation_module
+
+
+def correctionlib_wrapper(ceval):
+    return ceval.evaluate
+
 
 btag_base_var = [
     "lf",
@@ -89,7 +93,9 @@ def func(events, variations, ceval_btag, cfg, doVariations: bool = False):
             )
             btags = ak.fill_none(btags, 1.0)
             events[branch_name] = btags
-            variations.register_variation([('Jet', nominal_branch_name)], variation_name)
+            variations.register_variation(
+                [("Jet", nominal_branch_name)], variation_name
+            )
     return events, variations
 
 

@@ -1,32 +1,21 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import correctionlib
-import pandas as pd
-import numpy as np
-import hist
-import correctionlib.convert
-import rich
-
-import uproot
-
-import requests
-
-
 import gzip
 import json
+
 import correctionlib
 import correctionlib.convert
-import numpy as np
 import hist
-import uproot
-import rich
-import requests
+import numpy as np
 import pandas as pd
+import requests
+import rich
+import uproot
 from data.common.LeptonSel_cfg import ElectronWP, MuonWP
 
-
 path_jsonpog = "/Users/giorgiopizzati/Downloads/jsonpog-integration-master/POG"
+path_jsonpog = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG"
 url_latinos = "https://raw.githubusercontent.com/latinos/LatinoAnalysis/UL_production/NanoGardener/python/data/scale_factor/"
 for ERA, year in [
     ("Full2018v9", "2018"),
@@ -234,6 +223,10 @@ for ERA, year in [
         )
         for eras in all_eras:
             _eras = (int(eras.split("-")[0]) + int(eras.split("-")[1])) / 2
+            print(
+                eras,
+                _eras,
+            )
             for syst, sf_name in zip(
                 ["nominal", "stat", "syst"], ["sf", "sf_err", "sf_syst"]
             ):
@@ -249,6 +242,15 @@ for ERA, year in [
                                     hist.loc(eta_c),
                                     hist.loc(pt_c),
                                 ] = dfs[eras][sf_name][i]
+            print(
+                "hist loc",
+                h[
+                    hist.loc(_eras),
+                    :,
+                    :,
+                    :,
+                ],
+            )
 
         h.name = "Electron_WP_SF"
         h.label = "out"
@@ -297,6 +299,6 @@ for ERA, year in [
 
     import os
 
-    os.makedirs(f"../data/{ERA}/clib", exist_ok=True)
-    with gzip.open(f"../data/{ERA}/clib/lepton_sf.json.gz", "wt") as fout:
-        fout.write(cset.json(exclude_unset=True))
+    # os.makedirs(f"../data/{ERA}/clib", exist_ok=True)
+    # with gzip.open(f"../data/{ERA}/clib/lepton_sf.json.gz", "wt") as fout:
+    #     fout.write(cset.json(exclude_unset=True))

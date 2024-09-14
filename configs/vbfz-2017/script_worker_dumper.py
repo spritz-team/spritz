@@ -12,7 +12,6 @@ import onnxruntime as ort
 import spritz.framework.variation as variation_module
 import uproot
 import vector
-from coffea.lumi_tools import LumiMask
 from spritz.framework.framework import (
     big_process,
     get_analysis_dict,
@@ -20,7 +19,12 @@ from spritz.framework.framework import (
     read_chunks,
     write_chunks,
 )
-from spritz.modules.basic_selections import lumi_mask, pass_flags, pass_trigger
+from spritz.modules.basic_selections import (
+    LumiMask,
+    lumi_mask,
+    pass_flags,
+    pass_trigger,
+)
 from spritz.modules.btag_sf import btag_sf
 from spritz.modules.dnn_evaluator import dnn_evaluator, dnn_transform
 from spritz.modules.gen_analysis import gen_analysis
@@ -79,7 +83,7 @@ def process(events, **kwargs):
     era = kwargs.get("era", None)
     isData = kwargs.get("is_data", False)
     subsamples = kwargs.get("subsamples", {})
-    special_weight = kwargs.get("weight", "1.0")
+    special_weight = eval(kwargs.get("weight", "1.0"))
 
     # variations = {}
     # variations["nom"] = [()]
@@ -97,6 +101,12 @@ def process(events, **kwargs):
 
     sumw = ak.sum(events.weight)
     nevents = ak.num(events.weight, axis=0)
+
+    # Add special weight for each dataset (not subsamples)
+    if special_weight != 1.0:
+        print(f"Using special weight for {dataset}: {special_weight}")
+
+    events["weight"] = events.weight * special_weight
 
     # pass trigger and flags
     events = assign_run(events, isData, cfg, ceval_assign_run)
@@ -131,6 +141,18 @@ def process(events, **kwargs):
     # events = events[
     #     (ak.num(events.Lepton, axis=1) >= 2) & (ak.num(events.Jet, axis=1) >= 2)
     # ]
+
+    if kwargs.get("top_pt_rwgt", False):
+        toppt = 0.0
+        atoppt = 0.0
+        if events.GenPart.pdgId == 6 and (events.GenPart.statusFlags >> 13 & 1):
+            toppt = events.GenPart.pt
+        elif events.GenPart.pdgId == -6 and (events.GenPart.statusFlags >> 13 & 1):
+            atoppt = events.GenPart.pt
+        top_pt_rwgt = (toppt * atoppt > 0.0) * (
+            np.sqrt(np.exp(0.0615 - 0.0005 * toppt) * np.exp(0.0615 - 0.0005 * atoppt))
+        ) + (toppt * atoppt <= 0.0)
+        events["weight"] = events.weight * top_pt_rwgt
 
     # MCCorr
     # Should load SF and corrections here
@@ -170,8 +192,8 @@ def process(events, **kwargs):
         )
         if doTheoryVariations:
             events, variations = theory_unc(events, variations)
-    # else:
-    #     events = correct_jets_data(events, cfg, era)
+    else:
+        events = correct_jets_data(events, cfg, era)
 
     # regions = get_regions()
     # categories = ["ee", "mm"]
@@ -238,9 +260,6 @@ def process(events, **kwargs):
 
     # FIXME add FakeW
 
-    # Add special weight for each dataset (not subsamples)
-    events["weight"] = events.weight * eval(special_weight)
-
     print("Doing variations")
     # for variation in sorted(list(variations.keys())):
     # for variation in ["nom"]:
@@ -279,8 +298,6 @@ def process(events, **kwargs):
         # resort Jets
         jet_sort = ak.argsort(events[("Jet", "pt")], ascending=False, axis=1)
         events["Jet"] = events.Jet[jet_sort]
-
-        events["ptj1_check"] = ak.fill_none(ak.pad_none(events.Jet.pt, 1)[:, 0], -9999)
 
         events["Jet"] = events.Jet[events.Jet.pt >= 30]
         # events = events[(ak.num(events.Jet[events.Jet.pt >= 30], axis=1) >= 2)]
@@ -350,8 +367,8 @@ def process(events, **kwargs):
                 events.weight
                 * events.puWeight
                 * events.PUID_SF
-                * events.RecoSF
-                * events.TightSF
+                # * events.RecoSF
+                # * events.TightSF
                 * events.btagSF
             )
 
@@ -377,16 +394,17 @@ def process(events, **kwargs):
         # jets = jets[events.bVeto]
         # events = events[events.bVeto]
 
-        events = events[
-            ak.fill_none(
-                (events.njet >= 2)
-                & (events.mjj >= 200)
-                & (events.jets[:, 0].pt >= 30)
-                & (events.jets[:, 1].pt >= 30)
-                & (events.mll > 50),
-                False,
-            )
-        ]
+        events = events[ak.fill_none(events.mll > 50, False)]
+        # events = events[
+        #     ak.fill_none(
+        #         (events.njet >= 2)
+        #         & (events.mjj >= 200)
+        #         & (events.jets[:, 0].pt >= 30)
+        #         & (events.jets[:, 1].pt >= 30)
+        #         & (events.mll > 50),
+        #         False,
+        #     )
+        # ]
 
         events = dnn_evaluator(
             onnx_session,
@@ -424,9 +442,12 @@ def process(events, **kwargs):
                 & (abs(events.GenPart.eta) < 2.6)
             )
             gen_mask = ak.num(events.GenPart[gen_photons]) == 0
-            jet_genmatched = (events.Jet.genJetIdx >= 0) & (
-                events.Jet.genJetIdx < ak.num(events.GenJet)
+            # jet = ak.pad_none(events.Jet, 2, clip=True)
+            jet = events.Jet
+            jet_genmatched = (jet.genJetIdx >= 0) & (
+                jet.genJetIdx < ak.num(events.GenJet)
             )
+            jet_genmatched = ak.pad_none(jet_genmatched, 2)
             both_jets_gen_matched = ak.fill_none(
                 jet_genmatched[:, 0] & jet_genmatched[:, 1], False
             )
@@ -536,10 +557,15 @@ if __name__ == "__main__":
 
         # if new_chunk["data"].get("is_data", False):
         #     continue
-        # if new_chunk["dataset"] != "Zjj":
-        #     continue
         print(new_chunk["data"]["dataset"])
+        # if (
+        #     "Zjj" not in new_chunk["data"]["dataset"]
+        #     and "DY" not in new_chunk["data"]["dataset"]
+        # ):
+        #     print("skipping", new_chunk["data"]["dataset"])
+        #     continue
 
+        # # FIXME run only on data
         # if not new_chunk["data"].get("is_data", False):
         #     continue
 
@@ -556,7 +582,9 @@ if __name__ == "__main__":
             new_chunks[i]["error"] = nice_exception
             # result = None
 
-        # if i >= 1:
+        print(f"Done {i+1}/{len(new_chunks)}")
+        # # FIXME run only on first chunk
+        # if i >= 5:
         #     break
 
     # print("Results", results)
