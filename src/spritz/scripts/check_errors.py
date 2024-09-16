@@ -19,6 +19,8 @@ def bad_lines_fun(line):
         return False
     if line == "Run locally":
         return False
+    if line.startswith("did not find anything for LHEPart "):
+        return False
     if (
         "could not instantiate session cipher using cipher public info from server"
         in line

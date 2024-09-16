@@ -1429,6 +1429,24 @@
       "xsec": "338.26",
       "kfact": "1.000",
       "ref": "A1"
+    },
+    "WW_TuneCP5_13TeV-pythia8": {
+      "nanoAOD": "/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM",
+      "xsec": "75.800",
+      "kfact": "1.000",
+      "ref": "A1"
+    },
+    "WZ_TuneCP5_13TeV-pythia8": {
+      "nanoAOD": "/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM",
+      "xsec": "27.600",
+      "kfact": "1.000",
+      "ref": "A1"
+    },
+    "ZZ_TuneCP5_13TeV-pythia8": {
+      "nanoAOD": "/ZZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM",
+      "xsec": "12.140",
+      "kfact": "1.000",
+      "ref": "A1"
     }
   }
 }

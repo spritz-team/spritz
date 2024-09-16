@@ -95,7 +95,7 @@ def read_events(filename, start=0, stop=100, read_form={}):
                 d[branch] = events_bad_form[branch_name]
 
         if len(d.keys()) == 0:
-            print("did not find anything for", coll, file=sys.stderr)
+            print("did not find anything for", coll, filename, file=sys.stderr)
             continue
 
         events[coll] = ak.zip(d, **form[coll])

@@ -19,6 +19,9 @@ active_samples = [
     "ST_t-channel_top",
     "ST_tW_antitop",
     "ST_tW_top",
+    "WW_TuneCP5_13TeV-pythia8",
+    "WZ_TuneCP5_13TeV-pythia8",
+    "ZZ_TuneCP5_13TeV-pythia8",
 ]
 
 DataRun = [

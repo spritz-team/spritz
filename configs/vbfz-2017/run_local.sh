@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ERA="Full2017v9"
-job_id=49
+job_id=28
 
 cd condor/job_${job_id}
 
@@ -19,4 +19,4 @@ cp results.pkl ../chunks_job.pkl
 mv err ../err.txt
 mv out ../out.txt
 echo "Run locally" >> ../err.txt
-
+echo "Done ${job_id}"

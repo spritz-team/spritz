@@ -55,6 +55,7 @@ for ERA in config_eras:
                 "eeBadScFilter",
             ],
             "leptonSF": f"RPLME_PATH_FW/data/{ERA}/clib/lepton_sf.json.gz",
+            "triggerSF": f"RPLME_PATH_FW/data/{ERA}/clib/trigger_sf.json.gz",
             "puWeightsKey": f"Collisions{int(year_maps[ERA])-2000}_UltraLegacy_goldenJSON",
             "run_to_era": f"RPLME_PATH_FW/data/{ERA}/clib/run_to_era.json.gz",
             "do_theory_variations": False,
@@ -228,59 +229,6 @@ for ERA in config_eras:
             },
         }
         cfg["jme"] = jme[ERA]
-
-        # basedir = os.path.abspath(".") + "/data/2018/jme/"
-        # os.makedirs(basedir, exist_ok=True)
-
-        # jet_object = "AK4PFchs"
-        # production_jec = "Summer19UL18_V5_MC"
-        # production_jer = "Summer19UL18_JRV2_MC"
-        # base_url_jec = (
-        #     "https://raw.githubusercontent.com/cms-jet/JECDatabase/master/textFiles/"
-        # )
-        # base_url_jer = (
-        #     "https://raw.githubusercontent.com/cms-jet/JRDatabase/master/textFiles/"
-        # )
-
-        # files = ["L1FastJet", "L2Relative", "L3Absolute", "L2L3Residual"]
-        # files = [production_jec + "_" + file + "_" + jet_object for file in files] + [
-        #     f"Regrouped_{production_jec}_UncertaintySources" + "_" + jet_object
-        # ]
-        # postfixes = 4 * ["jec"] + ["junc"]
-        # urls = [base_url_jec + production_jec + "/" + file + ".txt" for file in files]
-
-        # files_jer = [
-        #     production_jer + "_PtResolution_" + jet_object,
-        #     production_jer + "_SF_" + jet_object,
-        # ]
-        # postfixes += ["jr", "jrsf"]
-        # urls += [
-        #     base_url_jer + production_jer + "/" + file + ".txt" for file in files_jer
-        # ]
-        # files += files_jer
-        # print(files)
-
-        # print(urls)
-
-        # paths = []
-        # jec_names = []
-        # junc = 0
-        # for file, url, postfix in zip(files, urls, postfixes):
-        #     new_filename = f"{file}.{postfix}.txt"
-        #     if postfix == "junc":
-        #         junc = file
-        #     # print(url)
-
-        #     with open(basedir + new_filename, "w") as f:
-        #         f.write(requests.get(url).text)
-        #     paths.append(basedir + new_filename)
-        #     jec_names.append(file)
-
-        # print(paths)
-        # print(jec_names)
-        # print(junc)
-        # print("\n\n")
-        # jme = {"jec_stack_names": jec_names, "jec_stack_paths": paths, "junc": junc}
 
         # cfg["JME"] = jme
         year_maps = {

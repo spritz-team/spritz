@@ -26,6 +26,18 @@
                 "eeBadScFilter"
             ],
             "with_name": null
+        },
+        "PV": {
+            "branches": [
+                "npvsGood"
+            ],
+            "with_name": null
+        },
+        "L1PreFiringWeight": {
+            "branches": [
+                "Nom"
+            ],
+            "with_name": null
         }
     },
     "mc": {
@@ -53,6 +65,18 @@
                 "BadPFMuonDzFilter",
                 "ecalBadCalibFilter",
                 "eeBadScFilter"
+            ],
+            "with_name": null
+        },
+        "PV": {
+            "branches": [
+                "npvsGood"
+            ],
+            "with_name": null
+        },
+        "L1PreFiringWeight": {
+            "branches": [
+                "Nom"
             ],
             "with_name": null
         }

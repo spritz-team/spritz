@@ -14,7 +14,9 @@ cp ../../run.sh .
 cp ../../../script_worker_dumper.py .
 cp ../../../../../data/${ERA}/cfg.json .
 
-./run.sh 
+./run.sh 2> err 1> out
 cp results.pkl ../chunks_job.pkl
-echo "Run locally" > ../err.txt
-
+mv err ../err.txt
+mv out ../out.txt
+echo "Run locally" >> ../err.txt
+echo "Done ${job_id}"

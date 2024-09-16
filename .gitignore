@@ -13,3 +13,4 @@ configs/*/plot**
 configs/*/condor*
 **.sites_map.json
 .ipynb_checkpoints
+**fits*

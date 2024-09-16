@@ -56,6 +56,8 @@ ceval_btag = correctionlib.CorrectionSet.from_file(cfg["btagSF"])
 ceval_puWeight = correctionlib.CorrectionSet.from_file(cfg["puWeights"])
 ceval_lepton_sf = correctionlib.CorrectionSet.from_file(cfg["leptonSF"])
 ceval_assign_run = correctionlib.CorrectionSet.from_file(cfg["run_to_era"])
+
+cset_trigger = correctionlib.CorrectionSet.from_file(cfg["triggerSF"])
 # jec_stack = getJetCorrections(cfg)
 rochester = getRochester(cfg)
 
@@ -143,12 +145,26 @@ def process(events, **kwargs):
     # ]
 
     if kwargs.get("top_pt_rwgt", False):
-        toppt = 0.0
-        atoppt = 0.0
-        if events.GenPart.pdgId == 6 and (events.GenPart.statusFlags >> 13 & 1):
-            toppt = events.GenPart.pt
-        elif events.GenPart.pdgId == -6 and (events.GenPart.statusFlags >> 13 & 1):
-            atoppt = events.GenPart.pt
+        top_particle_mask = (events.GenPart.pdgId == 6) & ak.values_astype(
+            (events.GenPart.statusFlags >> 13) & 1, bool
+        )
+        toppt = ak.fill_none(
+            ak.mask(events, ak.num(events.GenPart[top_particle_mask]) >= 1)
+            .GenPart[top_particle_mask][:, -1]
+            .pt,
+            0.0,
+        )
+
+        atop_particle_mask = (events.GenPart.pdgId == -6) & ak.values_astype(
+            (events.GenPart.statusFlags >> 13) & 1, bool
+        )
+        atoppt = ak.fill_none(
+            ak.mask(events, ak.num(events.GenPart[atop_particle_mask]) >= 1)
+            .GenPart[atop_particle_mask][:, -1]
+            .pt,
+            0.0,
+        )
+
         top_pt_rwgt = (toppt * atoppt > 0.0) * (
             np.sqrt(np.exp(0.0615 - 0.0005 * toppt) * np.exp(0.0615 - 0.0005 * atoppt))
         ) + (toppt * atoppt <= 0.0)
@@ -165,7 +181,7 @@ def process(events, **kwargs):
         events, variations = puweight_sf(events, variations, ceval_puWeight, cfg)
 
         # add trigger SF
-        events, variations = trigger_sf(events, variations, cfg)
+        events, variations = trigger_sf(events, variations, cset_trigger, cfg)
 
         # add LeptonSF
         events, variations = lepton_sf(events, variations, ceval_lepton_sf, cfg)
@@ -185,6 +201,14 @@ def process(events, **kwargs):
 
         # btag SF
         events, variations = btag_sf(events, variations, ceval_btag, cfg)
+
+        # prefire
+
+        # FIXME do variations
+        if "L1PreFiringWeight" in ak.fields(events):
+            events["prefireWeight"] = events.L1PreFiringWeight.Nom
+        else:
+            events["prefireWeight"] = ak.ones_like(events.weight)
 
         # Theory unc.
         doTheoryVariations = (
@@ -367,9 +391,11 @@ def process(events, **kwargs):
                 events.weight
                 * events.puWeight
                 * events.PUID_SF
-                # * events.RecoSF
-                # * events.TightSF
+                * events.RecoSF
+                * events.TightSF
                 * events.btagSF
+                * events.prefireWeight
+                * events.TriggerSFweight_2l
             )
 
         # Variable definitions
@@ -543,7 +569,8 @@ if __name__ == "__main__":
 
     results = {}
     errors = []
-    # for new_chunk in new_chunks:
+    processed = []
+
     for i in range(len(new_chunks)):
         new_chunk = new_chunks[i]
 
@@ -569,6 +596,15 @@ if __name__ == "__main__":
         # if not new_chunk["data"].get("is_data", False):
         #     continue
 
+        # if "tt" not in new_chunk["data"]["dataset"].lower():
+        #     continue
+
+        # # FIXME process only one dataset
+        # if new_chunk["data"]["dataset"] in processed:
+        #     continue
+
+        # processed.append(new_chunk["data"]["dataset"])
+
         try:
             # result = big_process(process=process, **new_chunk["data"])
             new_chunks[i]["result"] = big_process(process=process, **new_chunk["data"])
@@ -583,8 +619,9 @@ if __name__ == "__main__":
             # result = None
 
         print(f"Done {i+1}/{len(new_chunks)}")
+
         # # FIXME run only on first chunk
-        # if i >= 5:
+        # if i >= 1:
         #     break
 
     # print("Results", results)

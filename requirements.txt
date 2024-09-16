@@ -4,7 +4,7 @@ awkward
 numpy
 vector
 pandas
-correctionlib
+correctionlib git@github.com:giorgiopizz/correctionlib
 onnxruntime
 hist
 matplotlib

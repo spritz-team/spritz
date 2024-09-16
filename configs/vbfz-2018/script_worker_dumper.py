@@ -12,7 +12,6 @@ import onnxruntime as ort
 import spritz.framework.variation as variation_module
 import uproot
 import vector
-from coffea.lumi_tools import LumiMask
 from spritz.framework.framework import (
     big_process,
     get_analysis_dict,
@@ -20,7 +19,12 @@ from spritz.framework.framework import (
     read_chunks,
     write_chunks,
 )
-from spritz.modules.basic_selections import lumi_mask, pass_flags, pass_trigger
+from spritz.modules.basic_selections import (
+    LumiMask,
+    lumi_mask,
+    pass_flags,
+    pass_trigger,
+)
 from spritz.modules.btag_sf import btag_sf
 from spritz.modules.dnn_evaluator import dnn_evaluator, dnn_transform
 from spritz.modules.gen_analysis import gen_analysis
@@ -52,6 +56,8 @@ ceval_btag = correctionlib.CorrectionSet.from_file(cfg["btagSF"])
 ceval_puWeight = correctionlib.CorrectionSet.from_file(cfg["puWeights"])
 ceval_lepton_sf = correctionlib.CorrectionSet.from_file(cfg["leptonSF"])
 ceval_assign_run = correctionlib.CorrectionSet.from_file(cfg["run_to_era"])
+
+cset_trigger = correctionlib.CorrectionSet.from_file(cfg["triggerSF"])
 # jec_stack = getJetCorrections(cfg)
 rochester = getRochester(cfg)
 
@@ -139,12 +145,26 @@ def process(events, **kwargs):
     # ]
 
     if kwargs.get("top_pt_rwgt", False):
-        toppt = 0.0
-        atoppt = 0.0
-        if events.GenPart.pdgId == 6 and (events.GenPart.statusFlags >> 13 & 1):
-            toppt = events.GenPart.pt
-        elif events.GenPart.pdgId == -6 and (events.GenPart.statusFlags >> 13 & 1):
-            atoppt = events.GenPart.pt
+        top_particle_mask = (events.GenPart.pdgId == 6) & ak.values_astype(
+            (events.GenPart.statusFlags >> 13) & 1, bool
+        )
+        toppt = ak.fill_none(
+            ak.mask(events, ak.num(events.GenPart[top_particle_mask]) >= 1)
+            .GenPart[top_particle_mask][:, -1]
+            .pt,
+            0.0,
+        )
+
+        atop_particle_mask = (events.GenPart.pdgId == -6) & ak.values_astype(
+            (events.GenPart.statusFlags >> 13) & 1, bool
+        )
+        atoppt = ak.fill_none(
+            ak.mask(events, ak.num(events.GenPart[atop_particle_mask]) >= 1)
+            .GenPart[atop_particle_mask][:, -1]
+            .pt,
+            0.0,
+        )
+
         top_pt_rwgt = (toppt * atoppt > 0.0) * (
             np.sqrt(np.exp(0.0615 - 0.0005 * toppt) * np.exp(0.0615 - 0.0005 * atoppt))
         ) + (toppt * atoppt <= 0.0)
@@ -161,7 +181,7 @@ def process(events, **kwargs):
         events, variations = puweight_sf(events, variations, ceval_puWeight, cfg)
 
         # add trigger SF
-        events, variations = trigger_sf(events, variations, cfg)
+        events, variations = trigger_sf(events, variations, cset_trigger, cfg)
 
         # add LeptonSF
         events, variations = lepton_sf(events, variations, ceval_lepton_sf, cfg)
@@ -181,6 +201,14 @@ def process(events, **kwargs):
 
         # btag SF
         events, variations = btag_sf(events, variations, ceval_btag, cfg)
+
+        # prefire
+
+        # FIXME do variations
+        if "L1PreFiringWeight" in ak.fields(events):
+            events["prefireWeight"] = events.L1PreFiringWeight.Nom
+        else:
+            events["prefireWeight"] = ak.ones_like(events.weight)
 
         # Theory unc.
         doTheoryVariations = (
@@ -366,6 +394,8 @@ def process(events, **kwargs):
                 * events.RecoSF
                 * events.TightSF
                 * events.btagSF
+                * events.prefireWeight
+                * events.TriggerSFweight_2l
             )
 
         # Variable definitions
@@ -390,16 +420,17 @@ def process(events, **kwargs):
         # jets = jets[events.bVeto]
         # events = events[events.bVeto]
 
-        events = events[
-            ak.fill_none(
-                (events.njet >= 2)
-                & (events.mjj >= 200)
-                & (events.jets[:, 0].pt >= 30)
-                & (events.jets[:, 1].pt >= 30)
-                & (events.mll > 50),
-                False,
-            )
-        ]
+        events = events[ak.fill_none(events.mll > 50, False)]
+        # events = events[
+        #     ak.fill_none(
+        #         (events.njet >= 2)
+        #         & (events.mjj >= 200)
+        #         & (events.jets[:, 0].pt >= 30)
+        #         & (events.jets[:, 1].pt >= 30)
+        #         & (events.mll > 50),
+        #         False,
+        #     )
+        # ]
 
         events = dnn_evaluator(
             onnx_session,
@@ -437,9 +468,12 @@ def process(events, **kwargs):
                 & (abs(events.GenPart.eta) < 2.6)
             )
             gen_mask = ak.num(events.GenPart[gen_photons]) == 0
-            jet_genmatched = (events.Jet.genJetIdx >= 0) & (
-                events.Jet.genJetIdx < ak.num(events.GenJet)
+            # jet = ak.pad_none(events.Jet, 2, clip=True)
+            jet = events.Jet
+            jet_genmatched = (jet.genJetIdx >= 0) & (
+                jet.genJetIdx < ak.num(events.GenJet)
             )
+            jet_genmatched = ak.pad_none(jet_genmatched, 2)
             both_jets_gen_matched = ak.fill_none(
                 jet_genmatched[:, 0] & jet_genmatched[:, 1], False
             )
@@ -535,7 +569,8 @@ if __name__ == "__main__":
 
     results = {}
     errors = []
-    # for new_chunk in new_chunks:
+    processed = []
+
     for i in range(len(new_chunks)):
         new_chunk = new_chunks[i]
 
@@ -549,13 +584,25 @@ if __name__ == "__main__":
 
         # if new_chunk["data"].get("is_data", False):
         #     continue
-        # if new_chunk["dataset"] != "Zjj":
-        #     continue
         print(new_chunk["data"]["dataset"])
+        # if (
+        #     "Zjj" not in new_chunk["data"]["dataset"]
+        #     and "DY" not in new_chunk["data"]["dataset"]
+        # ):
+        #     print("skipping", new_chunk["data"]["dataset"])
+        #     continue
 
-        # FIXME run only on data
+        # # FIXME run only on data
         # if not new_chunk["data"].get("is_data", False):
         #     continue
+
+        # if "tt" not in new_chunk["data"]["dataset"].lower():
+        #     continue
+
+        # # FIXME process only one dataset
+        # if new_chunk["data"]["dataset"] in processed:
+        #     continue
+        # processed.append(new_chunk["data"]["dataset"])
 
         try:
             # result = big_process(process=process, **new_chunk["data"])
@@ -570,8 +617,9 @@ if __name__ == "__main__":
             new_chunks[i]["error"] = nice_exception
             # result = None
 
-        print(f"Done {i}/{len(new_chunks)}")
-        # FIXME run only on first chunk
+        print(f"Done {i+1}/{len(new_chunks)}")
+
+        # # FIXME run only on first chunk
         # if i >= 1:
         #     break
 

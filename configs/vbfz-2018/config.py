@@ -65,66 +65,73 @@ for variable in bins:
 subsamples_sig["outfiducial"] = "~events.fiducial_cut"
 print(subsamples_sig)
 
+datasets = {}
 
-datasets = {
-    "Zjj": {
-        "files": "EWK_LLJJ_MLL-50_MJJ-120",
-        "task_weight": 8,
-        "subsamples": subsamples_sig,
-    },
-    # "Int": {
-    #     "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
-    # },
-    "DY_NLO": {
-        "files": "DYJetsToLL_M-50",
-        "task_weight": 8,
-        # "weight": "0.5",
-        "subsamples": subsamples_dy,
-    },
-    # "DY-0J": {
-    #     "files": "DYJetsToLL_0J",
-    #     "task_weight": 8,
-    #     "weight": "0.5",
-    #     "subsamples": subsamples_dy,
-    # },
-    # "DY-1J": {
-    #     "files": "DYJetsToLL_1J",
-    #     "task_weight": 8,
-    #     "weight": "0.5",
-    #     "subsamples": subsamples_dy,
-    # },
-    # "DY-2J": {
-    #     "files": "DYJetsToLL_2J",
-    #     "task_weight": 8,
-    #     "weight": "0.5",
-    #     "subsamples": subsamples_dy,
-    # },
+
+datasets["Zjj"] = {
+    "files": "EWK_LLJJ_MLL-50_MJJ-120",
+    "task_weight": 8,
+    "subsamples": subsamples_sig,
 }
-
-# datasets["TT"] = {
-#     "files": "TTTo2L2Nu",
+# "Int": {
+#     "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
+# },
+datasets["DY_NLO"] = {
+    "files": "DYJetsToLL_M-50",
+    "task_weight": 8,
+    # "weight": "0.5",
+    "subsamples": subsamples_dy,
+}
+# "DY-0J": {
+#     "files": "DYJetsToLL_0J",
 #     "task_weight": 8,
-#     "top_pt_rwgt": True,
-# }
-
-# for i, sample in enumerate(
-#     [
-#         "ST_s-channel",
-#         "ST_t-channel_antitop",
-#         "ST_t-channel_top",
-#         "ST_tW_antitop",
-#         "ST_tW_top",
-#     ]
-# ):
-#     datasets[f"single_top_{i}"] = {
-#         "files": sample,
-#         "task_weight": 8,
-#     }
+#     # "weight": "0.5",
+#     "subsamples": subsamples_dy,
+# },
+# "DY-1J": {
+#     "files": "DYJetsToLL_1J",
+#     "task_weight": 8,
+#     # "weight": "0.5",
+#     "subsamples": subsamples_dy,
+# },
+# "DY-2J": {
+#     "files": "DYJetsToLL_2J",
+#     "task_weight": 8,
+#     # "weight": "0.5",
+#     "subsamples": subsamples_dy,
+# },
 
 # FIXME limit DY chunks
 for dataset in datasets:
     if "DY" in dataset:
         datasets[dataset]["max_chunks"] = 1000
+
+
+datasets["TT"] = {
+    "files": "TTTo2L2Nu",
+    "task_weight": 8,
+    "top_pt_rwgt": True,
+}
+
+for i, sample in enumerate(
+    [
+        "ST_s-channel",
+        "ST_t-channel_antitop",
+        "ST_t-channel_top",
+        "ST_tW_antitop",
+        "ST_tW_top",
+    ]
+):
+    datasets[f"single_top_{i}"] = {
+        "files": sample,
+        "task_weight": 8,
+    }
+
+for sample in ["WW", "WZ", "ZZ"]:
+    datasets[sample] = {
+        "files": f"{sample}_TuneCP5_13TeV-pythia8",
+        "task_weight": 8,
+    }
 
 for dataset in datasets:
     datasets[dataset]["read_form"] = "mc"
@@ -199,13 +206,26 @@ samples["Zjj_outfiducial"] = {
 }
 colors["Zjj_outfiducial"] = cmap_petroff[5]
 
+samples["Top"] = {
+    "samples": [
+        "TT",
+    ]
+    + [f"single_top_{i}" for i in range(5)],
+}
+colors["Top"] = cmap_petroff[1]
+
+samples["VV"] = {
+    "samples": ["WW", "WZ", "ZZ"],
+}
+colors["VV"] = cmap_petroff[2]
+
+
 # samples["Int"] = {
 #     "samples": ["Int"],
 # }
 # colors["Int"] = cmap_petroff[4]
 
 samples["DY_PU"] = {
-    # "samples": ["DY_NLO_PU"],
     # "samples": [f"DY-{j}J_PU" for j in range(3)],
     # "samples": ["DY_NLO_PU"] + [f"DY-{j}J_PU" for j in range(3)],
     "samples": ["DY_NLO_PU"],
@@ -225,6 +245,7 @@ samples["Zjj_fiducial"] = {
 }
 colors["Zjj_fiducial"] = cmap_pastel[0]
 
+
 # variable_to_unfold = "mjj"
 # for i in range(len(bins[variable_to_unfold]) - 1):
 #     samples[f"Zjj_{variable_to_unfold}_{i}"] = {
@@ -237,6 +258,17 @@ colors["Zjj_fiducial"] = cmap_pastel[0]
 # regions
 
 regions = {}
+regions["sr_jet_inc_ee"] = {
+    "func": lambda events: (abs(events.mll - 91) < 15) & events.ee,
+    "mask": 0,
+    "btagging": "bVeto",
+}
+regions["sr_jet_inc_mm"] = {
+    "func": lambda events: (abs(events.mll - 91) < 15) & events.mm,
+    "mask": 0,
+    "btagging": "bVeto",
+}
+
 regions["sr_inc_ee"] = {
     "func": lambda events: (abs(events.mll - 91) < 15)
     & (events.ptj1 > 50)
@@ -272,6 +304,27 @@ regions["sr_inc_mm"] = {
 #     "btagging": "bVeto",
 # }
 
+
+regions["top_cr_ee"] = {
+    "func": lambda events: (
+        (abs(events.mll - 91) < 15)
+        & ((events.ptj1 >= 50) | (events.ptj2 >= 50))
+        & events.ee
+    ),
+    "mask": 0,
+    "btagging": "bTag",
+}
+
+regions["top_cr_mm"] = {
+    "func": lambda events: (
+        (abs(events.mll - 91) < 15)
+        & ((events.ptj1 >= 50) | (events.ptj2 >= 50))
+        & events.mm
+    ),
+    "mask": 0,
+    "btagging": "bTag",
+}
+
 regions["dypu_cr_ee"] = {
     "func": lambda events: (
         (abs(events.mll - 91) < 15)
@@ -294,6 +347,11 @@ regions["dypu_cr_mm"] = {
 
 
 variables = {}
+
+variables["njet"] = {
+    "func": lambda events: events.njet,
+    "axis": hist.axis.Regular(6, 0, 6, name="njet"),
+}
 
 # Dijet
 variables["mjj"] = {
@@ -330,11 +388,11 @@ variables["dphijj"] = {
 # Single jet
 variables["ptj1"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 0].pt, -9999),
-    "axis": hist.axis.Regular(30, 30, 150, name="ptj1"),
+    "axis": hist.axis.Regular(30, 30, 500, name="ptj1"),
 }
 variables["ptj2"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 1].pt, -9999),
-    "axis": hist.axis.Regular(30, 30, 150, name="ptj2"),
+    "axis": hist.axis.Regular(30, 30, 500, name="ptj2"),
 }
 variables["etaj1"] = {
     "func": lambda events: ak.fill_none(events.jets[:, 0].eta, -9999),
@@ -360,7 +418,7 @@ variables["mll"] = {
 }
 variables["ptll"] = {
     "func": lambda events: (events.Lepton[:, 0] + events.Lepton[:, 1]).pt,
-    "axis": hist.axis.Regular(30, 0, 150, name="ptll"),
+    "axis": hist.axis.Regular(30, 0, 500, name="ptll"),
 }
 variables["detall"] = {
     "func": lambda events: abs(events.Lepton[:, 0].deltaeta(events.Lepton[:, 1])),
@@ -468,6 +526,11 @@ variables["dnn"] = {
         1.0,
         name="dnn",
     )
+}
+
+variables["run_period"] = {
+    "func": lambda events: events.run_period,
+    "axis": hist.axis.Regular(30, -1, 10, name="run_period"),
 }
 
 # for variable_to_unfold in bins:

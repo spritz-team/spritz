@@ -1,3 +1,4 @@
+import concurrent.futures
 import os
 import subprocess
 import sys
@@ -7,7 +8,7 @@ import matplotlib as mpl
 import mplhep as hep
 import numpy as np
 import uproot
-from spritz.framework.framework import get_analysis_dict
+from spritz.framework.framework import get_analysis_dict, get_fw_path
 
 mpl.use("Agg")
 from matplotlib import pyplot as plt
@@ -288,44 +289,61 @@ def main():
     # plot_ylim_ratio = analysis_dict["plot_ylim_ratio"]
     print("Doing plots")
 
-    proc = subprocess.Popen("mkdir -p plots", shell=True)
+    proc = subprocess.Popen(
+        "mkdir -p plots && " + f"cp {get_fw_path()}/data/common/index.php plots/",
+        shell=True,
+    )
     proc.wait()
 
-    cpus = 5
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=cpus) as executor:
-    #     tasks = []
-    #     for region in regions:
-    #         for variable in variables:
-    #             # if region != 'sr_geq_2j_mm' and variable != 'mjj':
-    #             #     continue
-    #             tasks.append(executor.submit(plot, histos, region, variable))
-    #             # break
-    #     concurrent.futures.wait(tasks)
-    #     for task in tasks:
-    #         task.result()
-
-    # for region in regions:
     # FIXME add nuisance for stat
     nuisances["stat"] = {
         "name": "stat",
         "type": "stat",
         "samples": dict((skey, "1.00") for skey in samples),
     }
-    input_file = uproot.open("histos.root")
-    for region in regions:
-        for variable in variables:
-            if "axis" not in variables[variable]:
-                continue
-            plot(
-                input_file,
-                region,
-                variable,
-                samples,
-                nuisances,
-                lumi,
-                colors,
-                year_label,
-            )
+
+    cpus = 10
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers=cpus) as executor:
+        tasks = []
+
+        input_file = uproot.open("histos.root")
+        for region in regions:
+            for variable in variables:
+                if "axis" not in variables[variable]:
+                    continue
+                tasks.append(
+                    executor.submit(
+                        plot,
+                        input_file,
+                        region,
+                        variable,
+                        samples,
+                        nuisances,
+                        lumi,
+                        colors,
+                        year_label,
+                    )
+                )
+                # break
+        concurrent.futures.wait(tasks)
+        for task in tasks:
+            task.result()
+
+    # for region in regions:
+    #     for variable in variables:
+    #         if "axis" not in variables[variable]:
+    #             continue
+    #         plot(
+    #             input_file,
+    #             region,
+    #             variable,
+    #             samples,
+    #             nuisances,
+    #             lumi,
+    #             colors,
+    #             year_label,
+    #         )
 
 
 if __name__ == "__main__":

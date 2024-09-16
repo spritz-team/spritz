@@ -10,6 +10,7 @@
     "eeBadScFilter"
   ],
   "leptonSF": "RPLME_PATH_FW/data/Full2016v9noHIPM/clib/lepton_sf.json.gz",
+  "triggerSF": "RPLME_PATH_FW/data/Full2016v9noHIPM/clib/trigger_sf.json.gz",
   "puWeightsKey": "Collisions16_UltraLegacy_goldenJSON",
   "run_to_era": "RPLME_PATH_FW/data/Full2016v9noHIPM/clib/run_to_era.json.gz",
   "do_theory_variations": false,
