@@ -51,6 +51,20 @@
             ],
             "with_name": "Momentum4D"
         },
+        "PV": {
+            "branches": [
+                "npvsGood"
+            ],
+            "with_name": null
+        },
+        "L1PreFiringWeight": {
+            "branches": [
+                "Nom",
+                "Up",
+                "Dn"
+            ],
+            "with_name": null
+        },
         "fixedGridRhoFastjetAll": {
             "branches": [],
             "with_name": null
@@ -165,6 +179,20 @@
                 "dz"
             ],
             "with_name": "Momentum4D"
+        },
+        "PV": {
+            "branches": [
+                "npvsGood"
+            ],
+            "with_name": null
+        },
+        "L1PreFiringWeight": {
+            "branches": [
+                "Nom",
+                "Up",
+                "Dn"
+            ],
+            "with_name": null
         },
         "fixedGridRhoFastjetAll": {
             "branches": [],

@@ -5,38 +5,21 @@ import sys
 from dbs.apis.dbsClient import DbsApi
 from spritz.framework.framework import get_analysis_dict, get_fw_path
 from spritz.utils import rucio_utils
-from spritz.utils.utils import print_debug
 
 path_fw = get_fw_path()
 
 
-def get_files(era):
+def get_files(era, active_samples):
     Samples = {}
-
-    try:
-        path = os.path.abspath(f"{path_fw}/data/{era}/samples/")
-        print("Working in analysis path:", path)
-        sys.path.insert(0, path)
-        d = {}
-        exec(
-            "from active_samples import active_samples",
-            globals(),
-            d,
-        )
-        active_samples = d["active_samples"]
-    except Exception as e:
-        print_debug(e)
-        print(f"No active samples, will use full dataset for era: {era}")
-        active_samples = "ALL"
 
     with open(f"{path_fw}/data/{era}/samples/samples.json") as file:
         Samples = json.load(file)
         if active_samples == "ALL":
-            Samples = {k: v for k, v in Samples["samples"].items()}  # noqa: F821 # type: ignore
+            Samples = {k: v for k, v in Samples["samples"].items()}
         else:
             Samples = {
                 k: v for k, v in Samples["samples"].items() if k in active_samples
-            }  # noqa: F821 # type: ignore
+            }
 
     files = {}
     for sampleName in Samples:
@@ -46,8 +29,10 @@ def get_files(era):
 
 
 def main():
-    era = get_analysis_dict()["year"]
-    files = get_files(era)
+    an_dict = get_analysis_dict()
+    era = an_dict["year"]
+    datasets = [k["files"] for k in an_dict["datasets"].values()]
+    files = get_files(era, datasets)
     print(files)
     rucio_client = rucio_utils.get_rucio_client()
     # DE|FR|IT|BE|CH|ES|UK
@@ -79,12 +64,11 @@ def main():
             print(f"\n[red bold] Exception: {e}[/]")
             sys.exit(1)
 
-        # files[dname]["files"] = list(map(lambda k: k[0], outfiles))
         url = "https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
         api = DbsApi(url=url)
         filelist = api.listFiles(dataset=dataset, detail=1)
 
-        for replicas, site in zip(outfiles, outsites):
+        for replicas, _ in zip(outfiles, outsites):
             prefix = "/store/data"
             if prefix not in replicas[0]:
                 prefix = "/store/mc"

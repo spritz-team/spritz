@@ -39,6 +39,28 @@ def get_analysis_dict(path=None):
     return analysis_cfg.__dict__  # type: ignore # noqa: F821
 
 
+def max_vec(vec, val):
+    return ak.where(vec > val, vec, val)
+
+
+def over_under(val, min, max):
+    val = ak.where(val >= max, max, val)
+    val = ak.where(val <= min, min, val)
+    return val
+
+
+def m_pi_pi(phi):
+    return ak.where(
+        phi > np.pi,
+        phi - 2 * np.pi,
+        ak.where(
+            phi <= -np.pi,
+            phi + 2 * np.pi,
+            phi,
+        ),
+    )
+
+
 def read_events(filename, start=0, stop=100, read_form={}):
     print("start reading")
     uproot_options = dict(
@@ -92,7 +114,12 @@ def read_events(filename, start=0, stop=100, read_form={}):
         for branch in coll_branches:
             branch_name = coll + "_" + branch
             if branch_name in branches:
-                d[branch] = events_bad_form[branch_name]
+                if branch_name.endswith("phi"):
+                    vals = events_bad_form[branch_name]
+                    vals = over_under(vals, -np.pi, np.pi)
+                    d[branch] = vals
+                else:
+                    d[branch] = events_bad_form[branch_name]
 
         if len(d.keys()) == 0:
             print("did not find anything for", coll, filename, file=sys.stderr)

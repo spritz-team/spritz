@@ -29,7 +29,12 @@ from spritz.modules.btag_sf import btag_sf
 from spritz.modules.dnn_evaluator import dnn_evaluator, dnn_transform
 from spritz.modules.gen_analysis import gen_analysis
 from spritz.modules.jet_sel import cleanJet, jetSel
-from spritz.modules.jme import correct_jets_data, correct_jets_mc
+from spritz.modules.jme import (
+    correct_jets_data,
+    correct_jets_mc,
+    jet_veto,
+    remove_jets_HEM_issue,
+)
 from spritz.modules.lepton_sel import createLepton, leptonSel
 from spritz.modules.lepton_sf import lepton_sf
 from spritz.modules.prompt_gen import prompt_gen_match_leptons
@@ -139,6 +144,9 @@ def process(events, **kwargs):
     # FIXME should clean from only tight / loose?
     events = cleanJet(events)
 
+    # Require at least one good PV
+    events = events[events.PV.npvsGood > 0]
+
     # # Require at least two loose leptons and loose jets
     # events = events[
     #     (ak.num(events.Lepton, axis=1) >= 2) & (ak.num(events.Jet, axis=1) >= 2)
@@ -169,6 +177,12 @@ def process(events, **kwargs):
             np.sqrt(np.exp(0.0615 - 0.0005 * toppt) * np.exp(0.0615 - 0.0005 * atoppt))
         ) + (toppt * atoppt <= 0.0)
         events["weight"] = events.weight * top_pt_rwgt
+
+    # Remove jets HEM issue
+    events = remove_jets_HEM_issue(events, cfg)
+
+    # Jet veto maps
+    events = jet_veto(events, cfg)
 
     # MCCorr
     # Should load SF and corrections here
@@ -204,9 +218,21 @@ def process(events, **kwargs):
 
         # prefire
 
-        # FIXME do variations
         if "L1PreFiringWeight" in ak.fields(events):
             events["prefireWeight"] = events.L1PreFiringWeight.Nom
+            events["prefireWeight_up"] = events.L1PreFiringWeight.Up
+            events["prefireWeight_down"] = events.L1PreFiringWeight.Dn
+
+            variations.register_variation(
+                columns=["prefireWeight"],
+                variation_name="prefireWeight_up",
+                format_rule=lambda _, var_name: var_name,
+            )
+            variations.register_variation(
+                columns=["prefireWeight"],
+                variation_name="prefireWeight_down",
+                format_rule=lambda _, var_name: var_name,
+            )
         else:
             events["prefireWeight"] = ak.ones_like(events.weight)
 
@@ -219,11 +245,6 @@ def process(events, **kwargs):
     else:
         events = correct_jets_data(events, cfg, era)
 
-    # regions = get_regions()
-    # categories = ["ee", "mm"]
-    # axis = get_axis()
-    # variables = get_variables()
-    # from analysis.config import regions, variables
     regions = deepcopy(analysis_cfg["regions"])
     variables = deepcopy(analysis_cfg["variables"])
 
@@ -234,7 +255,6 @@ def process(events, **kwargs):
 
     default_axis = [
         hist.axis.StrCategory(
-            # [f"{region}_{category}" for region in regions for category in categories],
             [region for region in regions],
             name="category",
         ),
@@ -245,7 +265,6 @@ def process(events, **kwargs):
 
     results = {}
     results = {dataset: {"sumw": sumw, "nevents": nevents, "events": 0, "histos": 0}}
-    # if "DY" in dataset:
     if subsamples != {}:
         results = {}
         for subsample in subsamples:
@@ -396,6 +415,7 @@ def process(events, **kwargs):
                 * events.btagSF
                 * events.prefireWeight
                 * events.TriggerSFweight_2l
+                * events.EMTFbug_veto
             )
 
         # Variable definitions
@@ -525,7 +545,6 @@ def process(events, **kwargs):
                         }
                         results[dataset_name]["histos"][variable].fill(
                             **vals,
-                            # category=f"{region}_{category}",
                             category=region,
                             syst=variation,
                             weight=events["weight"][mask],
@@ -534,7 +553,6 @@ def process(events, **kwargs):
                         var_name = variables[variable]["axis"].name
                         results[dataset_name]["histos"][variable].fill(
                             events[var_name][mask],
-                            # category=f"{region}_{category}",
                             category=region,
                             syst=variation,
                             weight=events["weight"][mask],
@@ -561,8 +579,6 @@ def process(events, **kwargs):
 
 
 if __name__ == "__main__":
-    # with open("chunks_job.pkl", "rb") as file:
-    #     new_chunks = cloudpickle.loads(zlib.decompress(file.read()))
     chunks_readable = False
     new_chunks = read_chunks("chunks_job.pkl", readable=chunks_readable)
     print("N chunks to process", len(new_chunks))
@@ -582,24 +598,13 @@ if __name__ == "__main__":
             )
             continue
 
-        # if new_chunk["data"].get("is_data", False):
-        #     continue
         print(new_chunk["data"]["dataset"])
-        # if (
-        #     "Zjj" not in new_chunk["data"]["dataset"]
-        #     and "DY" not in new_chunk["data"]["dataset"]
-        # ):
-        #     print("skipping", new_chunk["data"]["dataset"])
-        #     continue
 
         # # FIXME run only on data
         # if not new_chunk["data"].get("is_data", False):
         #     continue
 
-        # if "tt" not in new_chunk["data"]["dataset"].lower():
-        #     continue
-
-        # FIXME process only one dataset
+        # FIXME process only one chunk per dataset
         if new_chunk["data"]["dataset"] in processed:
             continue
         processed.append(new_chunk["data"]["dataset"])
@@ -612,19 +617,14 @@ if __name__ == "__main__":
             print("\n\nError for chunk", new_chunk, file=sys.stderr)
             nice_exception = "".join(tb.format_exception(None, e, e.__traceback__))
             print(nice_exception, file=sys.stderr)
-            # errors.append(dict(**new_chunk, error=nice_exception))
             new_chunks[i]["result"] = {}
             new_chunks[i]["error"] = nice_exception
-            # result = None
 
         print(f"Done {i+1}/{len(new_chunks)}")
 
         # # FIXME run only on first chunk
         # if i >= 1:
         #     break
-
-    # print("Results", results)
-    # print("Errors", errors)
 
     # file = uproot.recreate("results.root")
     datasets = list(filter(lambda k: "root:/" not in k, results.keys()))
@@ -638,6 +638,3 @@ if __name__ == "__main__":
     #     results[dataset]["events"] = {}
 
     write_chunks(new_chunks, "results.pkl", readable=chunks_readable)
-
-    # with open("results.pkl", "wb") as file:
-    #     file.write(zlib.compress(cloudpickle.dumps({"results": {}, "errors": errors})))

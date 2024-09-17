@@ -4,6 +4,27 @@ import numpy as np
 import spritz.framework.variation as variation_module
 
 
+def jet_veto(events, cfg):
+    cset = correctionlib.CorrectionSet.from_file(cfg["jetvetomaps"])
+    key = cfg["jme"]["jet_veto_tag"]
+    jet_phi = events.Jet.phi
+    jet_eta = events.Jet.eta
+    jet_veto = cset[key].evaluate("jetvetomap", jet_eta, jet_phi)
+    events["Jet"] = events.Jet[jet_veto == 0]
+    return events
+
+
+def remove_jets_HEM_issue(events, cfg):
+    if "2018" in cfg["era"]:
+        jet_phi = events.Jet.phi
+        jet_eta = events.Jet.eta
+        HEM_jets = ((jet_phi > -1.57) & (jet_phi < -0.87)) & (
+            (jet_eta > -3.0) & (jet_eta < -1.3)
+        )
+        events["Jet"] = events.Jet[~HEM_jets]
+    return events
+
+
 def correct_jets_mc(events, variations, cfg, run_variations=False):
     cset_jerc = correctionlib.CorrectionSet.from_file(cfg["jet_jerc"])
     cset_jersmear = correctionlib.CorrectionSet.from_file(cfg["jer_smear"])
@@ -68,8 +89,13 @@ def correct_jets_mc(events, variations, cfg, run_variations=False):
         jet_map["rho"],
     )
 
-    jet_map["jet_pt"] = jet_map["jet_pt_raw"] * sf_jec
-    jet_map["jet_mass"] = jet_map["jet_mass_raw"] * sf_jec
+    newc = (1.0 - events_jme.Jet.rawFactor) * sf_jec
+    jet_map["jet_pt"] = ak.where(
+        newc > 0.0, jet_map["jet_pt_raw"] * sf_jec, jet_map["jet_pt"]
+    )
+    jet_map["jet_mass"] = ak.where(
+        newc > 0.0, jet_map["jet_mass_raw"] * sf_jec, jet_map["jet_mass"]
+    )
 
     tag, variation_name, jet_pt_name = "nom", "nom", "jet_pt"
     new_jet_pt_name = jet_pt_name

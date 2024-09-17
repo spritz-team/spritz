@@ -24,12 +24,6 @@
                 "eeBadScFilter"
             ],
             "with_name": null
-        },
-        "PV": {
-            "branches": [
-                "npvsGood"
-            ],
-            "with_name": null
         }
     },
     "mc": {
@@ -55,12 +49,6 @@
                 "BadPFMuonDzFilter",
                 "eeBadScFilter",
                 "ecalBadCalibFilter"
-            ],
-            "with_name": null
-        },
-        "PV": {
-            "branches": [
-                "npvsGood"
             ],
             "with_name": null
         }

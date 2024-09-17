@@ -1,5 +1,7 @@
 import awkward as ak
+import numpy as np
 from data.common.TrigMaker_cfg import Trigger
+from spritz.framework.framework import max_vec, over_under
 
 pt_min_max = {
     11: [10 + 1e-3, 100 - 1e-3],
@@ -11,21 +13,35 @@ eta_min_max = {
 }
 
 
-def max_vec(vec, val):
-    return ak.where(vec > val, vec, val)
-
-
-def over_under(val, min, max):
-    val = ak.where(val >= max, max, val)
-    val = ak.where(val <= min, min, val)
-    return val
-
-
 def trigger_sf(events, variations, cset_trigger, cfg):
     year = cfg["era"]
 
     trigger_sf = ak.ones_like(events.run_period)
+    EMTFbug_veto = ak.ones_like(events.run_period)
     for era in Trigger[year]:
+        # EMTF bug
+
+        if Trigger[year][era]["EMTFBug"]:
+            lepton_mask = (
+                (abs(events.Lepton.pdgId) == 13)
+                & (events.Lepton.pt > 10.0)
+                & (abs(events.Lepton.eta) >= 1.24)
+            )
+            leptons = events.Lepton[lepton_mask]
+            leptons = ak.mask(leptons, ak.num(leptons) >= 2)
+            if not ak.all(ak.is_none(leptons)):
+                combs = ak.combinations(leptons, 2, axis=1)
+                dphi = abs(combs["0"].phi - combs["1"].phi) * 180.0 / np.pi
+                dphi = ak.where(dphi > 180, 360 - dphi, dphi)
+                EMTFbug_veto = ak.where(
+                    events.run_period == era,
+                    ak.values_astype(
+                        ~ak.fill_none(ak.any(dphi < 80.0, axis=1), False), float
+                    ),
+                    EMTFbug_veto,
+                )
+
+        # Trigger
         trigger_events = ak.mask(
             events, (events.run_period == 1) & (ak.num(events.Lepton) >= 2)
         )
@@ -226,4 +242,5 @@ def trigger_sf(events, variations, cset_trigger, cfg):
         sf = ak.fill_none(sf, 1.0)
         trigger_sf = ak.where(events.run_period == era, sf, trigger_sf)
     events["TriggerSFweight_2l"] = trigger_sf
+    events["EMTFbug_veto"] = EMTFbug_veto
     return events, variations

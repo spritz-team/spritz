@@ -32,6 +32,7 @@
     "btagTight": 0.71
   },
   "jme": {
+    "jet_veto_tag": "Summer19UL18_V1",
     "lvl_compound": "L1L2L3Res",
     "jet_algo": "AK4PFchs",
     "jer_tag": "Summer19UL18_JRV2_MC",
@@ -61,6 +62,8 @@
   "jer_smear": "RPLME_PATH_FW/data/Full2018v9/clib/jer_smear.json.gz",
   "jet_jerc": "RPLME_PATH_FW/data/Full2018v9/clib/jet_jerc.json.gz",
   "puidSF": "RPLME_PATH_FW/data/Full2018v9/clib/jmar.json.gz",
+  "jetvetomaps": "RPLME_PATH_FW/data/Full2018v9/clib/jetvetomaps.json.gz",
+  "met": "RPLME_PATH_FW/data/Full2018v9/clib/met.json.gz",
   "btagSF": "RPLME_PATH_FW/data/Full2018v9/clib/btagging.json.gz",
   "puWeights": "RPLME_PATH_FW/data/Full2018v9/clib/puWeights.json.gz",
   "lumiMask": "RPLME_PATH_FW/data/Full2018v9/lumimask/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",

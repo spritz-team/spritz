@@ -119,6 +119,7 @@ for ERA in config_eras:
 
         jme = {
             "Full2018v9": {
+                "jet_veto_tag": "Summer19UL18_V1",
                 "lvl_compound": "L1L2L3Res",
                 "jet_algo": "AK4PFchs",
                 "jer_tag": "Summer19UL18_JRV2_MC",
@@ -146,6 +147,7 @@ for ERA in config_eras:
                 ],
             },
             "Full2017v9": {
+                "jet_veto_tag": "Summer19UL17_V1",
                 "lvl_compound": "L1L2L3Res",
                 "jet_algo": "AK4PFchs",
                 "jer_tag": "Summer19UL17_JRV2_MC",
@@ -174,6 +176,7 @@ for ERA in config_eras:
                 ],
             },
             "Full2016v9noHIPM": {
+                "jet_veto_tag": "Summer19UL16_V1",
                 "lvl_compound": "L1L2L3Res",
                 "jet_algo": "AK4PFchs",
                 "jer_tag": "Summer20UL16_JRV3_MC",
@@ -200,6 +203,7 @@ for ERA in config_eras:
                 ],
             },
             "Full2016v9HIPM": {
+                "jet_veto_tag": "Summer19UL16_V1",
                 "lvl_compound": "L1L2L3Res",
                 "jet_algo": "AK4PFchs",
                 "jer_tag": "Summer20UL16APV_JRV3_MC",
@@ -242,13 +246,23 @@ for ERA in config_eras:
             "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/jer_smear.json.gz",
             f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/{year_maps[ERA]}/jet_jerc.json.gz",
             f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/{year_maps[ERA]}/jmar.json.gz",
+            f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/{year_maps[ERA]}/jetvetomaps.json.gz",
+            f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/JME/{year_maps[ERA]}/met.json.gz",
             f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/{year_maps[ERA]}/btagging.json.gz",
             f"/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/{year_maps[ERA]}/puWeights.json.gz",
         ]
         files_to_copy = list(
             map(lambda k: jsonpog_path + k.split("POG")[-1], files_to_copy)
         )
-        keys = ["jer_smear", "jet_jerc", "puidSF", "btagSF", "puWeights"]
+        keys = [
+            "jer_smear",
+            "jet_jerc",
+            "puidSF",
+            "jetvetomaps",
+            "met",
+            "btagSF",
+            "puWeights",
+        ]
 
         basedir = f"../data/{ERA}/clib/"
         os.makedirs(basedir, exist_ok=True)

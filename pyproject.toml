@@ -22,6 +22,7 @@ packages = ["src/spritz"]
 spritz-fileset = "spritz.scripts.fileset:main"
 spritz-chunks = "spritz.scripts.chunks:main"
 spritz-batch = "spritz.scripts.batch:main"
+spritz-run_local = "spritz.scripts.run_local:main"
 spritz-checkerrors = "spritz.scripts.check_errors:main"
 spritz-merge = "spritz.scripts.merge:main"
 spritz-postproc = "spritz.scripts.post_process:main"
