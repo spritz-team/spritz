@@ -11,6 +11,7 @@ src/spritz/version.py
 configs/*/data**
 configs/*/plot**
 configs/*/condor*
+configs/*/run_local.sh
+configs/*/fits*
 **.sites_map.json
 .ipynb_checkpoints
-**fits*
