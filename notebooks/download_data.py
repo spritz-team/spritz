@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 import json
 import os
 import subprocess
@@ -347,8 +348,8 @@ for ERA in config_eras:
             globals(),
         )
 
-        for sample in SamplesData:
-            Samples[sample] = deepcopy(SamplesData[sample])
+        for sample in SamplesData:  # type: ignore # noqa: F821
+            Samples[sample] = deepcopy(SamplesData[sample])  # type: ignore # noqa: F821
 
         # from data.samples_latinos.Summer20UL18_106x_nAODv9 import Samples as SamplesMC
         exec(
@@ -357,10 +358,10 @@ for ERA in config_eras:
             globals(),
         )
 
-        for sample in SamplesMC:
+        for sample in SamplesMC:  # type: ignore # noqa: F821
             if "AToZHT" in sample:
                 continue
-            Samples[sample] = deepcopy(SamplesMC[sample])
+            Samples[sample] = deepcopy(SamplesMC[sample])  # type: ignore # noqa: F821
 
         print(Samples)
 

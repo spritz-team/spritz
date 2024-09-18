@@ -73,38 +73,30 @@ datasets["Zjj"] = {
     "task_weight": 8,
     "subsamples": subsamples_sig,
 }
-# "Int": {
-#     "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
-# },
-datasets["DY_NLO"] = {
-    "files": "DYJetsToLL_M-50",
-    "task_weight": 8,
-    # "weight": "0.5",
-    "subsamples": subsamples_dy,
-}
-# "DY-0J": {
-#     "files": "DYJetsToLL_0J",
-#     "task_weight": 8,
-#     # "weight": "0.5",
-#     "subsamples": subsamples_dy,
-# },
-# "DY-1J": {
-#     "files": "DYJetsToLL_1J",
-#     "task_weight": 8,
-#     # "weight": "0.5",
-#     "subsamples": subsamples_dy,
-# },
-# "DY-2J": {
-#     "files": "DYJetsToLL_2J",
-#     "task_weight": 8,
-#     # "weight": "0.5",
-#     "subsamples": subsamples_dy,
-# },
 
-# FIXME limit DY chunks
-for dataset in datasets:
-    if "DY" in dataset:
-        datasets[dataset]["max_chunks"] = 1000
+datasets["Int"] = {
+    "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
+}
+
+# datasets["DY_NLO"] = {
+#     "files": "DYJetsToLL_M-50",
+#     "task_weight": 8,
+#     "weight": "0.5",
+#     "subsamples": subsamples_dy,
+# }
+
+for njet in [0, 1, 2]:
+    datasets[f"DY-{njet}J"] = {
+        "files": f"DYJetsToLL_{njet}J",
+        "task_weight": 8,
+        # "weight": "0.5",
+        "subsamples": subsamples_dy,
+    }
+
+# # FIXME limit DY chunks
+# for dataset in datasets:
+#     if "DY" in dataset:
+#         datasets[dataset]["max_chunks"] = 1000
 
 
 datasets["TT"] = {
@@ -209,15 +201,15 @@ colors["VV"] = cmap_petroff[2]
 # colors["Int"] = cmap_petroff[4]
 
 samples["DY_PU"] = {
-    # "samples": [f"DY-{j}J_PU" for j in range(3)],
+    "samples": [f"DY-{j}J_PU" for j in range(3)],
     # "samples": ["DY_NLO_PU"] + [f"DY-{j}J_PU" for j in range(3)],
-    "samples": ["DY_NLO_PU"],
+    # "samples": ["DY_NLO_PU"],
 }
 colors["DY_PU"] = cmap_petroff[3]
 samples["DY_hard"] = {
-    # "samples": [f"DY-{j}J_hard" for j in range(3)],
+    "samples": [f"DY-{j}J_hard" for j in range(3)],
     # "samples": ["DY_NLO_hard"] + [f"DY-{j}J_hard" for j in range(3)],
-    "samples": ["DY_NLO_hard"],
+    # "samples": ["DY_NLO_hard"],
 }
 
 colors["DY_hard"] = cmap_petroff[0]

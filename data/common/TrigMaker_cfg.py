@@ -939,7 +939,7 @@ Trigger = {
         6: {
             "begin": 281613,
             "end": 284042,
-            "lumi": 7.866107374,
+            "lumi": 8.703790078,
             "LegEffData": {
                 "DoubleEleLegHigPt": "Full2016v9noHIPM/data/EGM_MVAid/HLT_DoubleEleLegHigPt_Legacy2016.txt",
                 "DoubleEleLegLowPt": "Full2016v9noHIPM/data/EGM_MVAid/HLT_DoubleEleLegLowPt_Legacy2016.txt",
@@ -1024,7 +1024,7 @@ Trigger = {
         7: {
             "begin": 284043,
             "end": 284044,
-            "lumi": 0.8740119304,
+            "lumi": 0.036329226,
             "LegEffData": {
                 "DoubleEleLegHigPt": "Full2016v9noHIPM/data/EGM_MVAid/HLT_DoubleEleLegHigPt_Legacy2016.txt",
                 "DoubleEleLegLowPt": "Full2016v9noHIPM/data/EGM_MVAid/HLT_DoubleEleLegLowPt_Legacy2016.txt",

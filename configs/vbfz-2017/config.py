@@ -74,38 +74,30 @@ datasets["Zjj"] = {
     "task_weight": 8,
     "subsamples": subsamples_sig,
 }
-# "Int": {
-#     "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
-# },
-datasets["DY_NLO"] = {
-    "files": "DYJetsToLL_M-50",
-    "task_weight": 8,
-    # "weight": "0.5",
-    "subsamples": subsamples_dy,
-}
-# "DY-0J": {
-#     "files": "DYJetsToLL_0J",
-#     "task_weight": 8,
-#     # "weight": "0.5",
-#     "subsamples": subsamples_dy,
-# },
-# "DY-1J": {
-#     "files": "DYJetsToLL_1J",
-#     "task_weight": 8,
-#     # "weight": "0.5",
-#     "subsamples": subsamples_dy,
-# },
-# "DY-2J": {
-#     "files": "DYJetsToLL_2J",
-#     "task_weight": 8,
-#     # "weight": "0.5",
-#     "subsamples": subsamples_dy,
-# },
 
-# FIXME limit DY chunks
-for dataset in datasets:
-    if "DY" in dataset:
-        datasets[dataset]["max_chunks"] = 1000
+datasets["Int"] = {
+    "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
+}
+
+# datasets["DY_NLO"] = {
+#     "files": "DYJetsToLL_M-50",
+#     "task_weight": 8,
+#     "weight": "0.5",
+#     "subsamples": subsamples_dy,
+# }
+
+for njet in [0, 1, 2]:
+    datasets[f"DY-{njet}J"] = {
+        "files": f"DYJetsToLL_{njet}J",
+        "task_weight": 8,
+        # "weight": "0.5",
+        "subsamples": subsamples_dy,
+    }
+
+# # FIXME limit DY chunks
+# for dataset in datasets:
+#     if "DY" in dataset:
+#         datasets[dataset]["max_chunks"] = 1000
 
 
 datasets["TT"] = {
@@ -133,7 +125,6 @@ for sample in ["WW", "WZ", "ZZ"]:
         "files": f"{sample}_TuneCP5_13TeV-pythia8",
         "task_weight": 8,
     }
-
 for dataset in datasets:
     datasets[dataset]["read_form"] = "mc"
 
@@ -207,15 +198,15 @@ colors["VV"] = cmap_petroff[2]
 # colors["Int"] = cmap_petroff[4]
 
 samples["DY_PU"] = {
-    # "samples": [f"DY-{j}J_PU" for j in range(3)],
+    "samples": [f"DY-{j}J_PU" for j in range(3)],
     # "samples": ["DY_NLO_PU"] + [f"DY-{j}J_PU" for j in range(3)],
-    "samples": ["DY_NLO_PU"],
+    # "samples": ["DY_NLO_PU"],
 }
 colors["DY_PU"] = cmap_petroff[3]
 samples["DY_hard"] = {
-    # "samples": [f"DY-{j}J_hard" for j in range(3)],
+    "samples": [f"DY-{j}J_hard" for j in range(3)],
     # "samples": ["DY_NLO_hard"] + [f"DY-{j}J_hard" for j in range(3)],
-    "samples": ["DY_NLO_hard"],
+    # "samples": ["DY_NLO_hard"],
 }
 
 colors["DY_hard"] = cmap_petroff[0]
@@ -226,8 +217,7 @@ samples["Zjj_fiducial"] = {
 }
 colors["Zjj_fiducial"] = cmap_pastel[0]
 
-
-# variable_to_unfold = "mjj"
+# variable_to_unfold = "detajj"
 # for i in range(len(bins[variable_to_unfold]) - 1):
 #     samples[f"Zjj_{variable_to_unfold}_{i}"] = {
 #         "samples": [f"Zjj_{variable_to_unfold}_{i}"],
@@ -237,35 +227,71 @@ colors["Zjj_fiducial"] = cmap_pastel[0]
 
 
 # regions
+preselections = lambda events: (events.mll > 50) & (events.mjj > 200)  # noqa E731
 
 regions = {}
-regions["sr_jet_inc_ee"] = {
-    "func": lambda events: (abs(events.mll - 91) < 15) & events.ee,
-    "mask": 0,
-    "btagging": "bVeto",
-}
-regions["sr_jet_inc_mm"] = {
-    "func": lambda events: (abs(events.mll - 91) < 15) & events.mm,
-    "mask": 0,
-    "btagging": "bVeto",
-}
+for cat in ["ee", "mm"]:
+    regions[f"sr_jet_inc_{cat}"] = {
+        "func": lambda events: (abs(events.mll - 91) < 15) & events[cat],
+        "mask": 0,
+        "btagging": "bVeto",
+    }
 
-regions["sr_inc_ee"] = {
-    "func": lambda events: (abs(events.mll - 91) < 15)
-    & (events.ptj1 > 50)
-    & (events.ptj2 > 50)
-    & events.ee,
-    "mask": 0,
-    "btagging": "bVeto",
-}
-regions["sr_inc_mm"] = {
-    "func": lambda events: (abs(events.mll - 91) < 15)
-    & (events.ptj1 > 50)
-    & (events.ptj2 > 50)
-    & events.mm,
-    "mask": 0,
-    "btagging": "bVeto",
-}
+    regions[f"top_cr_{cat}"] = {
+        "func": lambda events: preselections(events)
+        & (abs(events.mll - 91) >= 15)
+        & events[cat],
+        "mask": 0,
+        "btagging": "bTag",
+    }
+
+    regions[f"dypu_cr_{cat}"] = {
+        "func": lambda events: preselections(events)
+        & (abs(events.mll - 91) < 15)
+        & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
+        & events[cat],
+        "mask": 0,
+        "btagging": "bTag",
+    }
+
+    regions[f"sr_inc_{cat}"] = {
+        "func": lambda events: preselections(events)
+        & (abs(events.mll - 91) < 15)
+        & (events.ptj1 > 50)
+        & (events.ptj2 > 50)
+        & events[cat],
+        "mask": 0,
+        "btagging": "bTag",
+    }
+
+# regions["sr_jet_inc_ee"] = {
+#     "func": lambda events: (abs(events.mll - 91) < 15) & events.ee,
+#     "mask": 0,
+#     "btagging": "bVeto",
+# }
+# regions["sr_jet_inc_mm"] = {
+#     "func": lambda events: (abs(events.mll - 91) < 15) & events.mm,
+#     "mask": 0,
+#     "btagging": "bVeto",
+# }
+
+# regions["sr_inc_ee"] = {
+#     "func": lambda events: (abs(events.mll - 91) < 15)
+#     & (events.ptj1 > 50)
+#     & (events.ptj2 > 50)
+#     & (events.mjj > 200)
+#     & events.ee,
+#     "mask": 0,
+#     "btagging": "bVeto",
+# }
+# regions["sr_inc_mm"] = {
+#     "func": lambda events: (abs(events.mll - 91) < 15)
+#     & (events.ptj1 > 50)
+#     & (events.ptj2 > 50)
+#     & events.mm,
+#     "mask": 0,
+#     "btagging": "bVeto",
+# }
 
 # regions["sr_high_dnn"] = {
 #     "func": lambda events: (abs(events.mll - 91) < 15)
@@ -286,45 +312,45 @@ regions["sr_inc_mm"] = {
 # }
 
 
-regions["top_cr_ee"] = {
-    "func": lambda events: (
-        (abs(events.mll - 91) < 15)
-        & ((events.ptj1 >= 50) | (events.ptj2 >= 50))
-        & events.ee
-    ),
-    "mask": 0,
-    "btagging": "bTag",
-}
+# regions["top_cr_ee"] = {
+#     "func": lambda events: (
+#         (abs(events.mll - 91) < 15)
+#         & ((events.ptj1 >= 50) | (events.ptj2 >= 50))
+#         & events.ee
+#     ),
+#     "mask": 0,
+#     "btagging": "bTag",
+# }
 
-regions["top_cr_mm"] = {
-    "func": lambda events: (
-        (abs(events.mll - 91) < 15)
-        & ((events.ptj1 >= 50) | (events.ptj2 >= 50))
-        & events.mm
-    ),
-    "mask": 0,
-    "btagging": "bTag",
-}
+# regions["top_cr_mm"] = {
+#     "func": lambda events: (
+#         (abs(events.mll - 91) < 15)
+#         & ((events.ptj1 >= 50) | (events.ptj2 >= 50))
+#         & events.mm
+#     ),
+#     "mask": 0,
+#     "btagging": "bTag",
+# }
 
-regions["dypu_cr_ee"] = {
-    "func": lambda events: (
-        (abs(events.mll - 91) < 15)
-        & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
-        & events.ee
-    ),
-    "mask": 0,
-    "btagging": "bVeto",
-}
+# regions["dypu_cr_ee"] = {
+#     "func": lambda events: (
+#         (abs(events.mll - 91) < 15)
+#         & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
+#         & events.ee
+#     ),
+#     "mask": 0,
+#     "btagging": "bVeto",
+# }
 
-regions["dypu_cr_mm"] = {
-    "func": lambda events: (
-        (abs(events.mll - 91) < 15)
-        & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
-        & events.mm
-    ),
-    "mask": 0,
-    "btagging": "bVeto",
-}
+# regions["dypu_cr_mm"] = {
+#     "func": lambda events: (
+#         (abs(events.mll - 91) < 15)
+#         & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
+#         & events.mm
+#     ),
+#     "mask": 0,
+#     "btagging": "bVeto",
+# }
 
 
 variables = {}

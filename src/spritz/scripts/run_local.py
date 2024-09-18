@@ -21,7 +21,7 @@ def main():
     cd tmp
     cp ../chunks_job.pkl .
     cp ../../run.sh .
-    cp RPLME_FW_PATH/src/spritz/runners/script_worker_dumper.py .
+    cp RPLME_FW_PATH/src/spritz/runners/runner_default.py .
     cp RPLME_FW_PATH/data/${ERA}/cfg.json .
 
     ./run.sh 2> err 1> out

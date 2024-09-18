@@ -147,11 +147,6 @@ def process(events, **kwargs):
     # Require at least one good PV
     events = events[events.PV.npvsGood > 0]
 
-    # # Require at least two loose leptons and loose jets
-    # events = events[
-    #     (ak.num(events.Lepton, axis=1) >= 2) & (ak.num(events.Jet, axis=1) >= 2)
-    # ]
-
     if kwargs.get("top_pt_rwgt", False):
         top_particle_mask = (events.GenPart.pdgId == 6) & ak.values_astype(
             (events.GenPart.statusFlags >> 13) & 1, bool
@@ -310,8 +305,7 @@ def process(events, **kwargs):
         events = ak.copy(originalEvents)
         assert ak.all(events.Jet.pt == jet_pt_backup)
 
-        # print(variation)
-        # for switch in variations[variation]:
+        print(variation)
         for switch in variations.get_variation_subs(variation):
             if len(switch) == 2:
                 # print(switch)
@@ -334,7 +328,11 @@ def process(events, **kwargs):
                 events.Lepton[:, ilep]["isTightElectron_" + eleWP]
                 | events.Lepton[:, ilep]["isTightMuon_" + muWP]
             )
-        events = events[comb]
+        events["l2Tight"] = ak.copy(comb)
+        events = events[events.l2Tight]
+
+        if len(events) == 0:
+            continue
 
         # Jet real selections
 
@@ -356,11 +354,11 @@ def process(events, **kwargs):
         ) == -13 * 13
 
         if not isData:
-            # Require the two leading lepton to be prompt gen matched (!fakes)
-            events = events[
+            events["prompt_gen_match_2l"] = (
                 events.Lepton[:, 0].promptgenmatched
                 & events.Lepton[:, 1].promptgenmatched
-            ]
+            )
+            events = events[events.prompt_gen_match_2l]
 
         # Analysis level cuts
         leptoncut = events.ee | events.mm
@@ -369,7 +367,7 @@ def process(events, **kwargs):
         leptoncut = leptoncut & (
             ak.fill_none(
                 ak.mask(
-                    ak.all(events.Lepton[:, 2:].pt < 10, axis=-1),
+                    ak.all(events.Lepton[:, 2:].pt < 10, axis=1),
                     ak.num(events.Lepton) >= 3,
                 ),
                 True,
@@ -383,6 +381,9 @@ def process(events, **kwargs):
         )
 
         events = events[leptoncut]
+
+        if len(events) == 0:
+            continue
 
         # BTag
 
@@ -424,23 +425,9 @@ def process(events, **kwargs):
             if "func" in variables[variable]:
                 events[variable] = variables[variable]["func"](events)
 
-        # events["dR_l1_jets"] = ak.fill_none(
-        #     ak.min(events.Lepton[:, 0].deltaR(jets[:, :]), axis=1), -1
-        # )
-        # events["dR_l2_jets"] = ak.fill_none(
-        #     ak.min(events.Lepton[:, 1].deltaR(jets[:, :]), axis=1), -1
-        # )
-        # events["dR_l1_l2"] = events.Lepton[:, 0].deltaR(events.Lepton[:, 1])
-
         # Apply cuts
 
-        # Preselection
-
-        # events = events[(events.mjj > 200)]
-        # jets = jets[events.bVeto]
-        # events = events[events.bVeto]
-
-        events = events[ak.fill_none(events.mll > 50, False)]
+        # events = events[ak.fill_none(events.mll > 50, False)]
         # events = events[
         #     ak.fill_none(
         #         (events.njet >= 2)
@@ -458,8 +445,6 @@ def process(events, **kwargs):
             dnn_t,
             dnn_cfg,
         )
-
-        # print("DNN", ak.min(events.dnn), ak.max(events.dnn))
 
         events[dataset] = ak.ones_like(events.run) == 1.0
 
@@ -514,12 +499,7 @@ def process(events, **kwargs):
             for region in regions:
                 # for category in categories:
                 # Apply mask for specific region, category and dataset_name
-                mask = (
-                    regions[region]["mask"]
-                    # & (events[categories[0]] | events[categories[1]])
-                    # & events[category]
-                    & events[dataset_name]
-                )
+                mask = regions[region]["mask"] & events[dataset_name]
 
                 # # Renorm for btag in region
                 # if not isData:

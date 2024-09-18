@@ -152,7 +152,7 @@ def main():
         clean_up=True,
         start=start,
         dryRun=dryRun,
-        script_name=f"{get_fw_path()}/src/spritz/runners/script_worker_dumper.py",
+        script_name=f"{get_fw_path()}/src/spritz/runners/runner_default.py",
     )
 
 
