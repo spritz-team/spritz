@@ -2,12 +2,11 @@ from typing import NewType
 
 import awkward as ak
 import spritz.framework.variation as variation
+from spritz.framework.framework import correctionlib_wrapper
 
 correctionlib_evaluator = NewType("correctionlib_evaluator", any)
 
 
-def correctionlib_wrapper(ceval):
-    return ceval.evaluate
 
 
 def format_rule(column, variation_name):

@@ -43,13 +43,13 @@ def trigger_sf(events, variations, cset_trigger, cfg):
 
         # Trigger
         trigger_events = ak.mask(
-            events, (events.run_period == 1) & (ak.num(events.Lepton) >= 2)
+            events, (events.run_period == era) & (ak.num(events.Lepton) >= 2)
         )
 
-        idxs = [0, 1, 0, 1, 0, 1]
+        lep_idxs = [0, 1, 0, 1, 0, 1]
 
-        effData = [ak.ones_like(trigger_events.run_period) for _ in range(len(idxs))]
-        effMC = [ak.ones_like(trigger_events.run_period) for _ in range(len(idxs))]
+        effData = [ak.ones_like(trigger_events.run_period) for _ in range(len(lep_idxs))]
+        effMC = [ak.ones_like(trigger_events.run_period) for _ in range(len(lep_idxs))]
 
         DRll_SF = ak.ones_like(trigger_events.run_period)
 
@@ -167,12 +167,12 @@ def trigger_sf(events, variations, cset_trigger, cfg):
                 )
 
             # Leg Efficiencies
-            for i, (leg, idx) in enumerate(zip(legs, idxs)):
-                pt = ak.copy(leptons[:, idx].pt)
-                eta = ak.copy(leptons[:, idx].eta)
+            for i, (leg, lep_idx) in enumerate(zip(legs, lep_idxs)):
+                pt = ak.copy(leptons[:, lep_idx].pt)
+                eta = ak.copy(leptons[:, lep_idx].eta)
 
-                pt = over_under(pt, *pt_min_max[pdgs[idx]])
-                eta = over_under(eta, *eta_min_max[pdgs[idx]])
+                pt = over_under(pt, *pt_min_max[pdgs[lep_idx]])
+                eta = over_under(eta, *eta_min_max[pdgs[lep_idx]])
 
                 data_type = "Data"
                 sf = cset_trigger[f"{era}_LegEff_{data_type}_{leg}"].evaluate(

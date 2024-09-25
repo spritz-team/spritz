@@ -170,7 +170,7 @@ def get_columns(events):
     return columns
 
 
-def vary(reads_columns: type[str | list[str]] = "all"):
+def vary(reads_columns: type[str | tuple[str]] = "all"):
     def actual_wrapper(func: callable):
         @wraps(func)
         def wrapper_decorator(

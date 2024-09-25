@@ -54,21 +54,7 @@ def correctRochester(events, is_data, rochester):
         muSF = ak.fill_none(muSF, 0)
     mu_pt = muSF * muons.pt
 
-    # remap to Lepton.pt
-    # print(ak.num(mu_pt))
-    # print(ak.num(events.Lepton.muonIdx))
-    # print(repr(mu_pt))
-    # print(repr(events.Lepton.muonIdx))
-
-    # d = {}
-    # d["mu_pt"] = ak.to_buffers(mu_pt)
-    # d["mu_idx"] = ak.to_buffers(events.Lepton.muonIdx)
-    # with open(
-    #     "/gwpool/users/gpizzati/spritz/configs/vbfz-2016pre/erred_arrays.json", "w"
-    # ) as file:
-    #     json.dump(d, file, indent=2)
     mu_idx = ak.to_packed(events.Lepton.muonIdx)
-    # mu_pt = mu_pt[events.Lepton.muonIdx]
     mu_pt = mu_pt[mu_idx]
     mu_mask = abs(events.Lepton.pdgId) == 13
 

@@ -25,7 +25,12 @@ def remove_jets_HEM_issue(events, cfg):
     return events
 
 
-def correct_jets_mc(events, variations, cfg, run_variations=False):
+# CMSJME in awkward
+
+
+def correct_jets_mc_jec(
+    events, variations: variation_module.Variation, cfg, run_variations=False
+):
     cset_jerc = correctionlib.CorrectionSet.from_file(cfg["jet_jerc"])
     cset_jersmear = correctionlib.CorrectionSet.from_file(cfg["jer_smear"])
     jme_cfg = cfg["jme"]
@@ -97,27 +102,7 @@ def correct_jets_mc(events, variations, cfg, run_variations=False):
         newc > 0.0, jet_map["jet_mass_raw"] * sf_jec, jet_map["jet_mass"]
     )
 
-    tag, variation_name, jet_pt_name = "nom", "nom", "jet_pt"
-    new_jet_pt_name = jet_pt_name
-
-    sf_jer = cset_jer.evaluate(
-        jet_map["jet_eta"],
-        tag,
-    )
-    sf_jer_ptres = cset_jer_ptres.evaluate(
-        jet_map["jet_eta"],
-        jet_map[jet_pt_name],
-        jet_map["rho"],
-    )
-    sf_jersmear = cset_jersmear.evaluate(
-        jet_map[jet_pt_name],
-        jet_map["jet_eta"],
-        jet_map["gen_pt"],
-        jet_map["rho"],
-        jet_map["EventID"],
-        sf_jer_ptres,
-        sf_jer,
-    )
+    # Apply JER
 
     # # Latinos recipe
     # no_jer_mask = (
@@ -129,19 +114,80 @@ def correct_jets_mc(events, variations, cfg, run_variations=False):
     # Latinos recipe
     no_jer_mask = abs(jet_map["jet_eta"]) >= 2.5
 
-    if tag != "nom":
-        new_jet_pt_name = jet_pt_name + "_" + variation_name
-    jet_map[new_jet_pt_name] = (
-        ak.where(no_jer_mask, 1.0, sf_jersmear) * jet_map[jet_pt_name]
+    sf_jer_ptres = cset_jer_ptres.evaluate(
+        jet_map["jet_eta"],
+        jet_map["jet_pt"],
+        jet_map["rho"],
     )
 
-    jet_map[new_jet_pt_name.replace("pt", "mass")] = (
-        ak.where(no_jer_mask, 1.0, sf_jersmear)
-        * jet_map[jet_pt_name.replace("pt", "mass")]
+    sf_jers = {}
+    for tag in ["nom", "up", "down"]:
+        sf_jers[tag] = cset_jersmear.evaluate(
+            jet_map["jet_pt"],
+            jet_map["jet_eta"],
+            jet_map["gen_pt"],
+            jet_map["rho"],
+            jet_map["EventID"],
+            sf_jer_ptres,
+            cset_jer.evaluate(
+                jet_map["jet_eta"],
+                tag,
+            ),
+        )
+        sf_jers[tag] = ak.where(no_jer_mask, 1.0, sf_jers[tag])
+
+    for tag in ["up", "down"]:
+        for variable in ["pt", "mass"]:
+            events[("Jet", f"{variable}_JER_{tag}")] = (
+                jet_map[f"jet_{variable}"] * sf_jers[tag]
+            )
+
+    variations.register_variation(
+        columns=[
+            ("Jet", "pt"),
+            ("Jet", "mass"),
+        ],
+        variation_name="JER_up",
+    )
+    variations.register_variation(
+        columns=[
+            ("Jet", "pt"),
+            ("Jet", "mass"),
+        ],
+        variation_name="JER_up",
     )
 
-    events[("Jet", "pt")] = jet_map[new_jet_pt_name]
-    events[("Jet", "mass")] = jet_map[new_jet_pt_name.replace("pt", "mass")]
+    for variable in ["pt", "mass"]:
+        jet_map[f"jet_{variable}"] *= sf_jers["nom"]
+
+    # do jes
+    for unc in jme_cfg["jes"]:
+        key = f"{jec_tag}_Regrouped_{unc}_{jme_cfg['jet_algo']}"
+        delta = cset_jerc[key].evaluate(
+            jet_map["jet_eta"],
+            jet_map["jet_pt"],
+        )
+        for variable in ["pt", "mass"]:
+            events[("Jet", f"{variable}_up")] = jet_map[f"jet_{variable}"] * (1 + delta)
+            events[("Jet", f"{variable}_down")] = jet_map[f"jet_{variable}"] * (
+                1 - delta
+            )
+            variations.register_variation(
+                columns=[
+                    ("Jet", "pt"),
+                    ("Jet", "mass"),
+                ],
+                variation_name=f"JES_{unc}_up",
+            )
+            variations.register_variation(
+                columns=[
+                    ("Jet", "pt"),
+                    ("Jet", "mass"),
+                ],
+                variation_name=f"JES_{unc}_up",
+            )
+    for variable in ["pt", "mass"]:
+        events[("Jet", variable)] = jet_map[f"jet_{variable}"]
     return events, variations
 
 
@@ -175,9 +221,13 @@ def correct_jets_data(events, cfg, era):
         jet_map["rho"],
     )
 
-    jet_map["jet_pt"] = jet_map["jet_pt_raw"] * sf_jec
-    jet_map["jet_mass"] = jet_map["jet_mass_raw"] * sf_jec
-
+    newc = (1.0 - events_jme.Jet.rawFactor) * sf_jec
+    jet_map["jet_pt"] = ak.where(
+        newc > 0.0, jet_map["jet_pt_raw"] * sf_jec, jet_map["jet_pt"]
+    )
+    jet_map["jet_mass"] = ak.where(
+        newc > 0.0, jet_map["jet_mass_raw"] * sf_jec, jet_map["jet_mass"]
+    )
     events[("Jet", "pt")] = jet_map["jet_pt"]
     events[("Jet", "mass")] = jet_map["jet_mass"]
     return events

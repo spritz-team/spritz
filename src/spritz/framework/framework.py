@@ -39,6 +39,10 @@ def get_analysis_dict(path=None):
     return analysis_cfg.__dict__  # type: ignore # noqa: F821
 
 
+def correctionlib_wrapper(ceval):
+    return ceval.evaluate
+
+
 def max_vec(vec, val):
     return ak.where(vec > val, vec, val)
 
