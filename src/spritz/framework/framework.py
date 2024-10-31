@@ -233,7 +233,14 @@ def write_chunks(d, filename, readable=False):
 
 
 # plots
-cmap_petroff = ["#5790fc", "#f89c20", "#e42536", "#964a8b", "#9c9ca1", "#7a21dd"]
+cmap_petroff = [
+    "#5790fc",
+    "#f89c20",
+    "#e42536",
+    "#964a8b",
+    "#9c9ca1",
+    "#7a21dd",
+]
 cmap_pastel = [
     "#A1C9F4",
     "#FFB482",

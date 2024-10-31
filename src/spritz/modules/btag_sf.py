@@ -1,10 +1,6 @@
 import awkward as ak
 import spritz.framework.variation as variation_module
-
-
-def correctionlib_wrapper(ceval):
-    return ceval.evaluate
-
+from spritz.framework.framework import correctionlib_wrapper
 
 btag_base_var = [
     "lf",
@@ -39,9 +35,11 @@ def func(events, variations, ceval_btag, cfg, doVariations: bool = False):
     if not doVariations:
         variation = "central"
         branch_name = nominal_branch_name
-        mask = (abs(events.Jet.eta) < 2.5) & (events.Jet.pt > 15.0)
+        mask = (abs(events.Jet.eta) < 2.5) & (events.Jet.pt > 30.0)
         mask = mask & (
-            (events.Jet.hadronFlavour == 0) | (events.Jet.hadronFlavour == 5)
+            (events.Jet.hadronFlavour == 0)
+            | (events.Jet.hadronFlavour == 4)
+            | (events.Jet.hadronFlavour == 5)
         )
         jets_btag = ak.mask(events.Jet, mask)
         btags = wrap_c(
@@ -76,7 +74,7 @@ def func(events, variations, ceval_btag, cfg, doVariations: bool = False):
         for branch_name, clib_name, variation_name in zip(
             branch_names, clib_variation_names, variation_names
         ):
-            mask = (abs(events.Jet.eta) < 2.5) & (events.Jet.pt > 15.0)
+            mask = (abs(events.Jet.eta) < 2.5) & (events.Jet.pt > 30.0)
             if "cferr" in variation_name:
                 mask = mask & (events.Jet.hadronFlavour == 4)
             else:
@@ -91,7 +89,9 @@ def func(events, variations, ceval_btag, cfg, doVariations: bool = False):
                 jets_btag.pt,
                 jets_btag.btagDeepFlavB,
             )
-            btags = ak.fill_none(btags, 1.0)
+            btags = ak.where(
+                ak.is_none(btags, axis=1), events[("Jet", nominal_branch_name)], btags
+            )
             events[branch_name] = btags
             variations.register_variation(
                 [("Jet", nominal_branch_name)], variation_name

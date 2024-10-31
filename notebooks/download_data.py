@@ -59,7 +59,6 @@ for ERA in config_eras:
             "triggerSF": f"RPLME_PATH_FW/data/{ERA}/clib/trigger_sf.json.gz",
             "puWeightsKey": f"Collisions{int(year_maps[ERA])-2000}_UltraLegacy_goldenJSON",
             "run_to_era": f"RPLME_PATH_FW/data/{ERA}/clib/run_to_era.json.gz",
-            "do_theory_variations": False,
             "era": ERA,
         }
 

@@ -51,7 +51,7 @@ def correctRochester(events, is_data, rochester):
         # Combine the two scale factors and scale the pt
         muSF = ak.where(ak.is_none(muons.genPartIdx, axis=1), mcSF2, mcSF1)
         # Remove masking from layout, none of the SF are masked here
-        muSF = ak.fill_none(muSF, 0)
+        muSF = ak.fill_none(muSF, 1.0)  # FIXME it was 0.0
     mu_pt = muSF * muons.pt
 
     mu_idx = ak.to_packed(events.Lepton.muonIdx)

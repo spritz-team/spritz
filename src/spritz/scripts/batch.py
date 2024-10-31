@@ -57,14 +57,15 @@ def submit(
         # # "clipper.hcms.it",
         # "pccms01.hcms.it",
         # "pccms02.hcms.it",
-        # # "pccms04.hcms.it",
+        "pccms04.hcms.it",
         # # "pccms08.hcms.it",
         # "pccms11.hcms.it",
-        "clipper.hcms.it",
-        "empire.hcms.it",
+        # "clipper.hcms.it",
+        # "empire.hcms.it",
         "pccms12.hcms.it",
         "pccms13.hcms.it",
-        # # "pccms14.hcms.it",
+        "pccms14.hcms.it",
+        # "hercules02.hcms.it",
     ]
 
     print("N chunks", len(new_chunks))

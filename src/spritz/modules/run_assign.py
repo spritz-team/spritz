@@ -3,8 +3,7 @@ import numpy as np
 from data.common.TrigMaker_cfg import Trigger
 
 
-def assign_run(events, is_data, cfg, ceval_assign_run):
-    # events = ak.zip({'run_number': np.arange(100_000)})
+def assign_run_period(events, is_data, cfg, ceval_assign_run):
     if is_data:
         events["run_period"] = ceval_assign_run["eras"].evaluate(events.run)
         # events["era"] = era

@@ -41,7 +41,7 @@ from spritz.modules.prompt_gen import prompt_gen_match_leptons
 from spritz.modules.puid_sf import puid_sf
 from spritz.modules.puweight import puweight_sf
 from spritz.modules.rochester import correctRochester, getRochester
-from spritz.modules.run_assign import assign_run
+from spritz.modules.run_assign import assign_run_period
 from spritz.modules.theory_unc import theory_unc
 from spritz.modules.trigger_sf import trigger_sf
 
@@ -116,7 +116,7 @@ def process(events, **kwargs):
     events["weight"] = events.weight * special_weight
 
     # pass trigger and flags
-    events = assign_run(events, isData, cfg, ceval_assign_run)
+    events = assign_run_period(events, isData, cfg, ceval_assign_run)
     events = pass_trigger(events, cfg["era"])
     events = pass_flags(events, cfg["flags"])
 
@@ -176,13 +176,13 @@ def process(events, **kwargs):
     # Remove jets HEM issue
     events = remove_jets_HEM_issue(events, cfg)
 
-    # Jet veto maps
+    # # Jet veto maps
     events = jet_veto(events, cfg)
 
     # MCCorr
     # Should load SF and corrections here
 
-    # Correct Muons with rochester
+    # # Correct Muons with rochester
     events = correctRochester(events, isData, rochester)
 
     if not isData:
@@ -232,9 +232,9 @@ def process(events, **kwargs):
             events["prefireWeight"] = ak.ones_like(events.weight)
 
         # Theory unc.
-        doTheoryVariations = (
-            special_analysis_cfg.get("do_theory_variations", True) and dataset == "Zjj"
-        )
+        doTheoryVariations = special_analysis_cfg.get(
+            "do_theory_variations", True
+        ) and (dataset == "Zjj" or "DY" in dataset)
         if doTheoryVariations:
             events, variations = theory_unc(events, variations)
     else:
@@ -243,7 +243,7 @@ def process(events, **kwargs):
     regions = deepcopy(analysis_cfg["regions"])
     variables = deepcopy(analysis_cfg["variables"])
 
-    # FIXME removing all variations
+    # # FIXME removing all variations
     variations.variations_dict = {
         k: v for k, v in variations.variations_dict.items() if k == "nom"
     }
@@ -387,11 +387,8 @@ def process(events, **kwargs):
 
         # BTag
 
-        btag_cut = (
-            (events.Jet.pt > 30)
-            & (abs(events.Jet.eta) < 2.5)
-            & (events.Jet.btagDeepFlavB > cfg["bTag"]["btagMedium"])
-        )
+        btag_mask = (events.Jet.pt > 30) & (abs(events.Jet.eta) < 2.5)
+        btag_cut = btag_mask & (events.Jet.btagDeepFlavB > cfg["bTag"]["btagMedium"])
         events["bVeto"] = ak.num(events.Jet[btag_cut]) == 0
         events["bTag"] = ak.num(events.Jet[btag_cut]) >= 1
 
@@ -399,7 +396,7 @@ def process(events, **kwargs):
             # Load all SFs
             # FIXME should remove btagSF
             events["btagSF"] = ak.prod(
-                events.Jet[events.Jet.pt >= 30].btagSF_deepjet_shape, axis=1
+                events.Jet[btag_mask].btagSF_deepjet_shape, axis=1
             )
             events["PUID_SF"] = ak.prod(events.Jet.PUID_SF, axis=1)
             events["RecoSF"] = events.Lepton[:, 0].RecoSF * events.Lepton[:, 1].RecoSF
@@ -473,7 +470,6 @@ def process(events, **kwargs):
                 & (abs(events.GenPart.eta) < 2.6)
             )
             gen_mask = ak.num(events.GenPart[gen_photons]) == 0
-            # jet = ak.pad_none(events.Jet, 2, clip=True)
             jet = events.Jet
             jet_genmatched = (jet.genJetIdx >= 0) & (
                 jet.genJetIdx < ak.num(events.GenJet)
@@ -492,8 +488,6 @@ def process(events, **kwargs):
         for region in regions:
             regions[region]["mask"] = regions[region]["func"](events)
 
-        # weight_name = "weight"
-
         # Fill histograms
         for dataset_name in results:
             for region in regions:
@@ -501,19 +495,6 @@ def process(events, **kwargs):
                 # Apply mask for specific region, category and dataset_name
                 mask = regions[region]["mask"] & events[dataset_name]
 
-                # # Renorm for btag in region
-                # if not isData:
-                #     sumw_before_btagsf = ak.sum(events[mask].weight)
-                #     events[weight_name] = events.weight * events.btagSF
-                #     sumw_after_btagsf = ak.sum(events[mask].weight_btag)
-                #     btag_norm = sumw_before_btagsf / sumw_after_btagsf
-                #     # print(dataset_name, region, cat, 'btag norm', btag_norm)
-                #     events[weight_name] = events.weight_btag * btag_norm
-                # else:
-                #     events[weight_name] = events.weight
-
-                btag_cut = regions[region].get("btagging", dataset_name)
-                mask = mask & events[btag_cut]
                 if len(events[mask]) == 0:
                     continue
 
@@ -525,7 +506,6 @@ def process(events, **kwargs):
                         }
                         results[dataset_name]["histos"][variable].fill(
                             **vals,
-                            # category=f"{region}_{category}",
                             category=region,
                             syst=variation,
                             weight=events["weight"][mask],
@@ -534,7 +514,6 @@ def process(events, **kwargs):
                         var_name = variables[variable]["axis"].name
                         results[dataset_name]["histos"][variable].fill(
                             events[var_name][mask],
-                            # category=f"{region}_{category}",
                             category=region,
                             syst=variation,
                             weight=events["weight"][mask],
@@ -581,6 +560,10 @@ if __name__ == "__main__":
             continue
 
         print(new_chunk["data"]["dataset"])
+
+        # # # FIXME run only on Zjj and DY
+        # if new_chunk["data"]["dataset"] not in ["Zjj"]:
+        #     continue
 
         # # FIXME run only on data
         # if not new_chunk["data"].get("is_data", False):
