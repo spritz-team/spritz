@@ -1,4 +1,5 @@
 import concurrent.futures
+import json
 import os
 import subprocess
 import sys
@@ -30,13 +31,24 @@ def darker_color(color):
     return tuple(rgb)
 
 
-def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_label):
+def plot(
+    input_file,
+    region,
+    variable,
+    samples,
+    nuisances,
+    lumi,
+    colors,
+    year_label,
+    variable_label=None,
+):
     print("Doing ", region, variable)
 
     histos = {}
     directory = input_file[f"{region}/{variable}"]
     dummy_histo = 0
     axis = 0
+    hmin = 1e7
     for sample in samples:
         h = directory[f"histo_{sample}"].to_hist()
         if isinstance(axis, int):
@@ -46,6 +58,7 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
         histos[sample] = {}
         histo = histos[sample]
         histo["nom"] = h.values()
+        hmin = min(hmin, np.min(histo["nom"]))
         stat = np.sqrt(h.variances())
         histo["stat_up"] = h.values() + stat
         histo["stat_down"] = h.values() - stat
@@ -57,21 +70,23 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
             if nuisances[nuisance]["type"] == "stat":
                 continue
             name = nuisances[nuisance]["name"]
+
             if sample not in nuisances[nuisance]["samples"]:
+                histo[f"{nuisance}_up"] = h.values().copy()
+                histo[f"{nuisance}_down"] = h.values().copy()
                 continue
 
-            elif nuisances[nuisance]["type"] == "lnN":
+            if nuisances[nuisance]["type"] == "lnN":
                 scaling = float(nuisances[nuisance]["samples"][sample])
-                histo[f"{name}_up"] = scaling * h.values()
-                histo[f"{name}_down"] = 1.0 / scaling * h.values()
+                histo[f"{nuisance}_up"] = scaling * h.values()
+                histo[f"{nuisance}_down"] = 1.0 / scaling * h.values()
             else:
-                histo[f"{name}_up"] = (
-                    directory[f"hist_{sample}_{name}Up"].values().copy()
+                histo[f"{nuisance}_up"] = (
+                    directory[f"histo_{sample}_{name}Up"].values().copy()
                 )
-                histo[f"{name}_down"] = (
-                    directory[f"hist_{sample}_{name}Down"].values().copy()
+                histo[f"{nuisance}_down"] = (
+                    directory[f"histo_{sample}_{name}Down"].values().copy()
                 )
-
     hlast = dummy_histo.copy()
     hlast_bkg = dummy_histo.copy()
     v_syst_bkg = {
@@ -108,6 +123,7 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
     vvar_up = np.sqrt(vvar_up)
     vvar_do = np.sqrt(vvar_do)
     hlast = np.where(hlast >= 1e-6, hlast, 1e-6)
+    hlast_bkg = np.where(hlast_bkg >= 1e-6, hlast_bkg, 1e-6)
 
     # mc_err_up = 0
     # mc_err_up = np.sqrt(mc_err_up)
@@ -121,6 +137,12 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
     # start = time.time()
 
     ###
+
+    signal_tot = hlast - hlast_bkg
+    # significance = signal_tot / np.sqrt(hlast_bkg)
+    significance = signal_tot / hlast_bkg
+    # print(region, variable, significance)
+    blind_mask = significance > 0.10
 
     x = axis.centers
     edges = axis.edges
@@ -141,6 +163,14 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
         if histoName == "Data":
             yup = histos[histoName]["stat_up"] - y
             ydown = y - histos[histoName]["stat_down"]
+            # if "sr" in region:
+            if True:
+                y_blind = np.zeros_like(y)
+                yup_blind = np.zeros_like(y)
+                ydown_blind = np.zeros_like(y)
+                y = np.where(blind_mask, y_blind, y)
+                yup = np.where(blind_mask, yup_blind, yup)
+                ydown = np.where(blind_mask, ydown_blind, ydown)
             ax[0].errorbar(
                 x,
                 y,
@@ -199,11 +229,13 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
     ax[0].set_yscale("log")
     ax[0].legend(
         loc="upper center",
+        # loc=(0.016, 0.75),
         frameon=True,
         ncols=3,
         framealpha=0.8,
+        fontsize=8,
     )
-    ax[0].set_ylim(0.01, np.max(hlast_bkg) * 1e2)
+    ax[0].set_ylim(max(0.5, hmin), np.max(hlast_bkg) * 1e2)
 
     ratio_err_up = vvar_up / hlast
     ratio_err_down = vvar_do / hlast
@@ -245,6 +277,17 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
         ydata = hlast_bkg.copy()
         ydata_up = np.sqrt(hlast_bkg).copy()
         ydata_down = np.sqrt(hlast_bkg).copy()
+
+    # Blind all signal region
+    # if "sr" in region:
+    if True:
+        ydata_blind = np.zeros_like(hlast_bkg)
+        ydata_up_blind = np.zeros_like(hlast_bkg)
+        ydata_down_blind = np.zeros_like(hlast_bkg)
+        ydata = np.where(blind_mask, ydata_blind, ydata)
+        ydata_up = np.where(blind_mask, ydata_up_blind, ydata_up)
+        ydata_down = np.where(blind_mask, ydata_down_blind, ydata_down)
+
     ratio = ydata / hlast
     ratio_data_up = ydata_up / hlast
     ratio_data_down = ydata_down / hlast
@@ -260,7 +303,10 @@ def plot(input_file, region, variable, samples, nuisances, lumi, colors, year_la
     ax[1].set_xlim(np.min(edges), np.max(edges))
     ax[0].set_ylabel("Events")
     ax[1].set_ylabel("DATA / MC")
-    ax[1].set_xlabel(variable)
+    if variable_label:
+        ax[1].set_xlabel(variable_label)
+    else:
+        ax[1].set_xlabel(variable)
     # print('time before fig save', time.time()-start)
     fig.savefig(
         f"plots/{region}_{variable}.png",
@@ -302,6 +348,22 @@ def main():
         "samples": dict((skey, "1.00") for skey in samples),
     }
 
+    # regions = ["top_cr", "dypu_cr", "sr_inc"]
+    # categories = ["ee", "mm"]
+    # regions = [f"{region}_{cat}" for region in regions for cat in categories]
+
+    # variables_orig = variables.copy()
+    # variables = [
+    #     "detajj_fits",
+    #     "MET_fits",
+    #     "dnn_fits",
+    #     "dnn_fits_2",
+    #     "dnn_ptll",
+    # ]
+    # variables = list(filter(lambda k: k in variables_orig, variables))
+    # variables = {variable: {"axis": 0} for variable in variables}
+    # variables["MET_fits"]["label"] = "Events"
+
     cpus = 10
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=cpus) as executor:
@@ -312,6 +374,8 @@ def main():
             for variable in variables:
                 if "axis" not in variables[variable]:
                     continue
+                # if variable != "dnn_ptll" or region != "sr_inc_mm":
+                #     continue
                 tasks.append(
                     executor.submit(
                         plot,
@@ -323,9 +387,9 @@ def main():
                         lumi,
                         colors,
                         year_label,
+                        variables[variable].get("label"),
                     )
                 )
-                # break
         concurrent.futures.wait(tasks)
         for task in tasks:
             task.result()

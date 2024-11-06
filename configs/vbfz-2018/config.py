@@ -7,21 +7,26 @@ import hist
 import numpy as np
 from spritz.framework.framework import cmap_pastel, cmap_petroff, get_fw_path
 
+year = "Full2018v9"
+
 fw_path = get_fw_path()
+
 with open(f"{fw_path}/data/common/lumi.json") as file:
     lumis = json.load(file)
 
-year = "Full2018v9"
+with open(f"{fw_path}/data/{year}/cfg.json") as file:
+    cfg = json.load(file)
+
 # lumi = lumis[year]["B"] / 1000  # ERA C of 2017
 lumi = lumis[year]["tot"] / 1000  # All of 2017
 plot_label = "VBF-Z"
 year_label = "2018"
-njobs = 200
+njobs = 400
 
 
 dnn_path = "/gwpool/users/gpizzati/test_processor/my_processor/notebooks/output_model"
 special_analysis_cfg = {
-    "do_theory_variations": False,
+    "do_theory_variations": True,
     "dnn": {
         "model": f"{dnn_path}/model.onnx",
         "scaler": f"{dnn_path}/scaler.txt",
@@ -200,10 +205,10 @@ samples["VV"] = {
 }
 colors["VV"] = cmap_petroff[2]
 
-# samples["Int"] = {
-#     "samples": ["Int"],
-# }
-# colors["Int"] = cmap_petroff[4]
+samples["Int"] = {
+    "samples": ["Int"],
+}
+colors["Int"] = cmap_petroff[4]
 
 samples["DY_PU"] = {
     "samples": [f"DY-{j}J_PU" for j in range(3)],
@@ -235,130 +240,80 @@ colors["Zjj_fiducial"] = cmap_pastel[0]
 
 
 # regions
-preselections = lambda events: (events.mll > 50) & (events.mjj > 200)  # noqa E731
 
 regions = {}
-for cat in ["ee", "mm"]:
-    regions[f"sr_jet_inc_{cat}"] = {
-        "func": lambda events: (abs(events.mll - 91) < 15) & events[cat],
-        "mask": 0,
-        "btagging": "bVeto",
-    }
-
-    regions[f"top_cr_{cat}"] = {
-        "func": lambda events: preselections(events)
-        & (abs(events.mll - 91) >= 15)
-        & events[cat],
-        "mask": 0,
-        "btagging": "bTag",
-    }
-
-    regions[f"dypu_cr_{cat}"] = {
-        "func": lambda events: preselections(events)
-        & (abs(events.mll - 91) < 15)
-        & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
-        & events[cat],
-        "mask": 0,
-        "btagging": "bTag",
-    }
-
-    regions[f"sr_inc_{cat}"] = {
-        "func": lambda events: preselections(events)
-        & (abs(events.mll - 91) < 15)
-        & (events.ptj1 > 50)
-        & (events.ptj2 > 50)
-        & events[cat],
-        "mask": 0,
-        "btagging": "bTag",
-    }
+preselections = (  # noqa E731
+    lambda events: (events.mll > 50)
+    & (events.njet >= 2)
+    & (events.mjj > 200)
+    & (events.ptj1 > 30)
+    & (events.ptj2 > 30)
+)
 
 # regions["sr_jet_inc_ee"] = {
-#     "func": lambda events: (abs(events.mll - 91) < 15) & events.ee,
+#     "func": lambda events: (abs(events.mll - 91) < 15) & events.bVeto & events.ee,
 #     "mask": 0,
-#     "btagging": "bVeto",
 # }
+
+regions["top_cr_ee"] = {
+    "func": lambda events: preselections(events)
+    & (abs(events.mll - 91) >= 15)
+    & events.bTag
+    & events.ee,
+    "mask": 0,
+}
+
+regions["dypu_cr_ee"] = {
+    "func": lambda events: preselections(events)
+    & (abs(events.mll - 91) < 15)
+    & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
+    & events.bVeto
+    & events.ee,
+    "mask": 0,
+}
+
+regions["sr_inc_ee"] = {
+    "func": lambda events: preselections(events)
+    & (abs(events.mll - 91) < 15)
+    & (events.ptj1 > 50)
+    & (events.ptj2 > 50)
+    & events.bVeto
+    & events.ee,
+    "mask": 0,
+}
+
+
 # regions["sr_jet_inc_mm"] = {
-#     "func": lambda events: (abs(events.mll - 91) < 15) & events.mm,
+#     "func": lambda events: (abs(events.mll - 91) < 15) & events.bVeto & events.mm,
 #     "mask": 0,
-#     "btagging": "bVeto",
 # }
 
-# regions["sr_inc_ee"] = {
-#     "func": lambda events: (abs(events.mll - 91) < 15)
-#     & (events.ptj1 > 50)
-#     & (events.ptj2 > 50)
-#     & (events.mjj > 200)
-#     & events.ee,
-#     "mask": 0,
-#     "btagging": "bVeto",
-# }
-# regions["sr_inc_mm"] = {
-#     "func": lambda events: (abs(events.mll - 91) < 15)
-#     & (events.ptj1 > 50)
-#     & (events.ptj2 > 50)
-#     & events.mm,
-#     "mask": 0,
-#     "btagging": "bVeto",
-# }
+regions["top_cr_mm"] = {
+    "func": lambda events: preselections(events)
+    & (abs(events.mll - 91) >= 15)
+    & events.bTag
+    & events.mm,
+    "mask": 0,
+}
 
-# regions["sr_high_dnn"] = {
-#     "func": lambda events: (abs(events.mll - 91) < 15)
-#     & (events.ptj1 > 50)
-#     & (events.ptj2 > 50)
-#     & (events.dnn > 0.6),
-#     "mask": 0,
-#     "btagging": "bVeto",
-# }
+regions["dypu_cr_mm"] = {
+    "func": lambda events: preselections(events)
+    & (abs(events.mll - 91) < 15)
+    & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
+    & events.bVeto
+    & events.mm,
+    "mask": 0,
+}
 
-# regions["sr_low_dnn"] = {
-#     "func": lambda events: (abs(events.mll - 91) < 15)
-#     & (events.ptj1 > 50)
-#     & (events.ptj2 > 50)
-#     & (events.dnn <= 0.6),
-#     "mask": 0,
-#     "btagging": "bVeto",
-# }
-
-
-# regions["top_cr_ee"] = {
-#     "func": lambda events: (
-#         (abs(events.mll - 91) < 15)
-#         & ((events.ptj1 >= 50) | (events.ptj2 >= 50))
-#         & events.ee
-#     ),
-#     "mask": 0,
-#     "btagging": "bTag",
-# }
-
-# regions["top_cr_mm"] = {
-#     "func": lambda events: (
-#         (abs(events.mll - 91) < 15)
-#         & ((events.ptj1 >= 50) | (events.ptj2 >= 50))
-#         & events.mm
-#     ),
-#     "mask": 0,
-#     "btagging": "bTag",
-# }
-
-# regions["dypu_cr_ee"] = {
-#     "func": lambda events: (
-#         (abs(events.mll - 91) < 15)
-#         & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
-#         & events.ee
-#     ),
-#     "mask": 0,
-#     "btagging": "bVeto",
-# }
-
-# regions["dypu_cr_mm"] = {
-#     "func": lambda events: (
-#         (abs(events.mll - 91) < 15)
-#         & ((events.ptj1 <= 50) | (events.ptj2 <= 50))
-#         & events.mm
-#     ),
-#     "mask": 0,
-#     "btagging": "bVeto",
-# }
+regions["sr_inc_mm"] = {
+    "func": lambda events: preselections(events)
+    & (abs(events.mll - 91) < 15)
+    & (events.ptj1 > 50)
+    & (events.ptj2 > 50)
+    & events.bVeto
+    & events.mm,
+    "mask": 0,
+}
 
 
 variables = {}
@@ -387,6 +342,8 @@ variables["detajj"] = {
     ),
     "axis": hist.axis.Regular(30, 0, 10, name="detajj"),
 }
+
+
 variables["dphijj"] = {
     "func": lambda events: abs(
         ak.fill_none(events.jets[:, 0].deltaphi(events.jets[:, 1]), -9999)
@@ -548,6 +505,27 @@ variables["run_period"] = {
     "axis": hist.axis.Regular(30, -1, 10, name="run_period"),
 }
 
+# fits
+variables["dnn_fits"] = {
+    "axis": hist.axis.Regular(
+        20,
+        0.0,
+        1.0,
+        name="dnn",
+    ),
+}
+variables["detajj_fits"] = {
+    "func": lambda events: abs(
+        ak.fill_none(events.jets[:, 0].deltaeta(events.jets[:, 1]), -9999)
+    ),
+    "axis": hist.axis.Regular(6, 0, 8.5, name="detajj_fits"),
+}
+
+variables["MET_fits"] = {
+    "func": lambda events: events.PuppiMET.pt,
+    "axis": hist.axis.Regular(8, 0, 150, name="MET_fits"),
+}
+
 # for variable_to_unfold in bins:
 #     variables[f"dnn_{variable_to_unfold}"] = {
 #         "axis": [
@@ -577,30 +555,135 @@ variables["run_period"] = {
 # }
 
 
-nuisances = {
-    # "QCDScale": {
-    #     "name": "QCDScale",
-    #     "kind": "weight_envelope",
-    #     "type": "shape",
-    #     "samples": {
-    #         skey: [f"QCDScale_{i}" for i in range(6)] for skey in samples_for_nuis
-    #     },
-    # },
-    # "PDF": {
-    #     "name": "PDF",
-    #     "kind": "weight_square",
-    #     "type": "shape",
-    #     "samples": {
-    #         skey: [f"PDF_{i}" for i in range(100)] for skey in samples_for_nuis
-    #     },
-    # },
-    "lumi": {
-        "name": "lumi",
-        "type": "lnN",
-        "samples": dict((skey, "1.02") for skey in samples),
-    },
+nuisances = {}
+mcs = [sample for sample in samples if not samples[sample].get("is_data", False)]
+
+
+nuisances["lumi"] = {
+    "name": "lumi",
+    "type": "lnN",
+    "samples": dict((skey, "1.02") for skey in mcs),
 }
 
+
+for shift in [
+    "lf",
+    "hf",
+    "hfstats1",
+    "hfstats2",
+    "lfstats1",
+    "lfstats2",
+    "cferr1",
+    "cferr2",
+    "jes",
+]:
+    nuisances[f"btag_{shift}"] = {
+        "name": "CMS_btag_SF_" + shift,
+        "kind": "suffix",
+        "type": "shape",
+        "samples": dict((skey, ["1", "1"]) for skey in mcs),
+    }
+
+
+for js in cfg["jme"]["jes"]:
+    nuisances[f"JES_{js}"] = {
+        "name": "CMS_jet_scale_" + js,
+        "kind": "suffix",
+        "type": "shape",
+        "samples": dict((skey, ["1", "1"]) for skey in mcs),
+    }
+
+nuisances["JER"] = {
+    "name": "CMS_jet_res",
+    "kind": "suffix",
+    "type": "shape",
+    "samples": dict((skey, ["1", "1"]) for skey in mcs),
+}
+
+nuisances["prefireWeight"] = {
+    "name": "CMS_prefireWeight",
+    "kind": "suffix",
+    "type": "shape",
+    "samples": dict((skey, ["1", "1"]) for skey in mcs),
+}
+
+nuisances["PU"] = {
+    "name": "CMS_PU",
+    "kind": "suffix",
+    "type": "shape",
+    "samples": dict((skey, ["1", "1"]) for skey in mcs),
+}
+
+nuisances["PUID_SF"] = {
+    "name": "CMS_PUID_SF",
+    "kind": "suffix",
+    "type": "shape",
+    "samples": dict((skey, ["1", "1"]) for skey in mcs),
+}
+
+nuisances["ele_reco"] = {
+    "name": "CMS_ele_reco",
+    "kind": "suffix",
+    "type": "shape",
+    "samples": dict((skey, ["1", "1"]) for skey in mcs),
+}
+
+nuisances["ele_idiso"] = {
+    "name": "CMS_ele_idiso",
+    "kind": "suffix",
+    "type": "shape",
+    "samples": dict((skey, ["1", "1"]) for skey in mcs),
+}
+
+nuisances["mu_idiso"] = {
+    "name": "CMS_mu_idiso",
+    "kind": "suffix",
+    "type": "shape",
+    "samples": dict((skey, ["1", "1"]) for skey in mcs),
+}
+
+for sname in ["Zjj", "DY"]:
+    mcs_theory_unc = [
+        sample
+        for sample in samples
+        if not samples[sample].get("is_data", False) and (sname in sample)
+    ]
+
+    nuisances[f"PDFWeight_{sname}"] = {
+        "name": f"PDF_{sname}",
+        "kind": "weight_square",
+        "type": "shape",
+        "samples": {
+            skey: [f"PDFWeight_{i}" for i in range(100)] for skey in mcs_theory_unc
+        },
+    }
+
+    nuisances[f"QCDScale_{sname}"] = {
+        "name": f"QCDScale_{sname}",
+        "kind": "weight_envelope",
+        "type": "shape",
+        "samples": {
+            skey: [f"QCDScale_{i}" for i in range(6)] for skey in mcs_theory_unc
+        },
+    }
+
+# nuisances["VV_norm"] = {
+#     "name": "CMS_VV_norm",
+#     "samples": {
+#         "VV": "1.00",
+#     },
+#     "type": "rateParam",
+#     "cuts": [k for k in regions],
+# }
+
+nuisances["Top_norm"] = {
+    "name": "CMS_Top_norm",
+    "samples": {
+        "Top": "1.00",
+    },
+    "type": "rateParam",
+    "cuts": [k for k in regions],
+}
 
 nuisances["DY_hard_norm"] = {
     "name": "CMS_DY_hard_norm",
@@ -612,7 +695,7 @@ nuisances["DY_hard_norm"] = {
 }
 
 nuisances["DY_PU_norm"] = {
-    "name": "CMS_DY_PU_norm",
+    "name": "CMS_DY_PU_18_norm",
     "samples": {
         "DY_PU": "1.00",
     },

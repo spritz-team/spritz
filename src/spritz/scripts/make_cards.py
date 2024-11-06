@@ -86,7 +86,6 @@ def make_datacard(
                 enable_stat = True
                 continue
             if nuisances[systematic]["type"] == "rateParam":
-                print("\n\ndebug")
                 if (
                     "samples" in nuisances[systematic]
                     and sample_name not in nuisances[systematic]["samples"]
@@ -103,17 +102,17 @@ def make_datacard(
                     f'{bin_name} {sample_name} '  # FIXME should use region?
                     f'{nuisances[systematic]["samples"][sample_name]}'
                 )
-                print("\n\ndjaksjdkasjdska")
                 continue
             if sample_name in nuisances[systematic]["samples"]:
+                nuis_name = nuisances[systematic]["name"]
                 if nuisances[systematic]["type"] == "lnN":
                     syst = nuisances[systematic]["samples"][sample_name]
                 else:
                     syst = "1.0"
                     for tag in ["Up", "Down"]:
-                        _final_name = final_name + f"_{systematic}{tag}"
+                        _final_name = final_name + f"_{nuis_name}{tag}"
                         _h = input_file[_final_name].to_hist().copy()
-                        output_file[f"histo_{name}_{systematic}{tag}"] = _h
+                        output_file[f"histo_{name}_{nuis_name}{tag}"] = _h
             else:
                 syst = "-"
             if systematic not in systs:
@@ -155,8 +154,16 @@ def main():
     regions = analysis_dict["regions"]
     variables = analysis_dict["variables"]
     fin = uproot.open("histos.root")
-    for region in regions:
-        for variable in variables:
+    good_regions = [
+        f"{region}_{cat}"
+        for region in ["sr_inc", "dypu_cr", "top_cr"]
+        for cat in ["ee", "mm"]
+    ]
+    # good_variables = ["mjj", "dnn", "phil1"]
+    # good_variables = ["detajj_fits", "dnn_fits", "MET_fits"]
+    good_variables = ["detajj_fits", "dnn_ptll", "MET_fits"]
+    for region in good_regions:
+        for variable in good_variables:
             if "axis" not in variables[variable]:
                 continue
             make_datacard(

@@ -38,6 +38,12 @@ def trigger_sf(events, variations, cset_trigger, cfg):
                     ak.values_astype(
                         ~ak.fill_none(ak.any(dphi < 80.0, axis=1), False), float
                     ),
+                    # ak.values_astype(
+                    #     ~ak.fill_none(
+                    #         ak.ones_like(leptons[:, 0].pt) != 1.0, False
+                    #     ),  # FIXME
+                    #     float,
+                    # ),
                     EMTFbug_veto,
                 )
 
@@ -48,7 +54,9 @@ def trigger_sf(events, variations, cset_trigger, cfg):
 
         lep_idxs = [0, 1, 0, 1, 0, 1]
 
-        effData = [ak.ones_like(trigger_events.run_period) for _ in range(len(lep_idxs))]
+        effData = [
+            ak.ones_like(trigger_events.run_period) for _ in range(len(lep_idxs))
+        ]
         effMC = [ak.ones_like(trigger_events.run_period) for _ in range(len(lep_idxs))]
 
         DRll_SF = ak.ones_like(trigger_events.run_period)

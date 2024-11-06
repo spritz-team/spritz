@@ -1,10 +1,7 @@
 import awkward as ak
 import numpy as np
 import spritz.framework.variation as variation_module
-
-
-def correctionlib_wrapper(ceval):
-    return ceval.evaluate
+from spritz.framework.framework import correctionlib_wrapper
 
 
 def lepton_sf(events, variations, ceval_lepton_sf, cfg):
@@ -144,8 +141,14 @@ def lepton_sf(events, variations, ceval_lepton_sf, cfg):
         / muon_idiso_sf["muon_iso"]["nominal"] ** 2
     )
 
-    lepton_idiso_sf["nominal"] = ak.where(mu_mask, muon_sf, lepton_idiso_sf["nominal"])
-    lepton_idiso_sf["syst"] = ak.where(mu_mask, muon_syst, lepton_idiso_sf["syst"])
+    # lepton_idiso_sf["nominal"] = ak.where(mu_mask, muon_sf, lepton_idiso_sf["nominal"])
+    # FIXME, removing muon SF
+    lepton_idiso_sf["nominal"] = ak.where(
+        mu_mask, ak.ones_like(muon_sf), lepton_idiso_sf["nominal"]
+    )
+    lepton_idiso_sf["syst"] = ak.where(
+        mu_mask, ak.ones_like(muon_syst) * 0.0, lepton_idiso_sf["syst"]
+    )
 
     for variation in lepton_idiso_vars:
         if variation == "nominal":

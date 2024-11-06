@@ -1,10 +1,17 @@
+import concurrent.futures
 import fnmatch
 import json
+import sys
 
 import hist
 import numpy as np
 import uproot
-from spritz.framework.framework import get_analysis_dict, get_fw_path, read_chunks
+from spritz.framework.framework import (
+    add_dict_iterable,
+    get_analysis_dict,
+    get_fw_path,
+    read_chunks,
+)
 
 path_fw = get_fw_path()
 
@@ -142,60 +149,125 @@ def blind(region, variable, edges):
         return np.arange(0, len(edges)) > len(edges) / 2
 
 
+def single_post_process(results, region, variable, samples, xss, nuisances, lumi):
+    dout = {}
+    for histoName in samples:
+        for sample in samples[histoName]["samples"]:
+            try:
+                results[sample]["histos"][variable]
+            except KeyError:
+                print(f"Could not find key {sample} in {variable}")
+            h = results[sample]["histos"][variable].copy()
+            real_axis = list([slice(None) for _ in range(len(h.axes) - 2)])
+            h = h[tuple(real_axis + [hist.loc(region), slice(None)])].copy()
+            is_data = samples[histoName].get("is_data", False)
+            # renorm mcs
+            if not is_data:
+                h = renorm(h, xss[sample], results[sample]["sumw"], lumi)
+
+            tmp_histo = h[tuple(real_axis + [hist.loc("nom")])].copy()
+            hist_fold(tmp_histo, 3)
+            if len(real_axis) > 1:
+                tmp_histo = hist_unroll(tmp_histo)
+            key = f"{region}/{variable}/histo_{histoName}"
+            if key not in dout:
+                dout[key] = tmp_histo.copy()
+            else:
+                dout[key] += tmp_histo.copy()
+            nom_histo = tmp_histo.copy()
+
+            for nuis in nuisances:
+                if nuisances[nuis]["type"] != "shape":
+                    continue
+                if histoName not in nuisances[nuis]["samples"]:
+                    continue
+                if nuisances[nuis]["kind"] in ["suffix", "weight"]:
+                    nuis_name = nuisances[nuis]["name"]
+                    for tag in ["up", "down"]:
+                        tmp_histo = h[
+                            tuple(real_axis + [hist.loc(f"{nuis}_{tag}")])
+                        ].copy()
+                        hist_fold(tmp_histo, 3)
+                        if len(real_axis) > 1:
+                            tmp_histo = hist_unroll(tmp_histo)
+                        key = f"{region}/{variable}/histo_{histoName}_{nuis_name}{tag.capitalize()}"
+                        if key not in dout:
+                            dout[key] = tmp_histo.copy()
+                        else:
+                            dout[key] += tmp_histo.copy()
+                nuis_kind = nuisances[nuis]["kind"]
+                if nuis_kind.endswith("envelope") or nuis_kind.endswith("square"):
+                    nuis_name = nuisances[nuis]["name"]
+                    variations = []
+                    for nuis_histo in nuisances[nuis]["samples"][histoName]:
+                        tmp_histo = h[tuple(real_axis + [hist.loc(nuis_histo)])].copy()
+                        hist_fold(tmp_histo, 3)
+                        if len(real_axis) > 1:
+                            tmp_histo = hist_unroll(tmp_histo)
+                        variations.append(tmp_histo.values())
+                    variations = np.array(variations)
+                    arrup = 0
+                    arrdo = 0
+
+                    if nuisances[nuis]["kind"].endswith("envelope"):
+                        arrup = np.max(variations, axis=0)
+                        arrdo = np.min(variations, axis=0)
+                    elif nuisances[nuis]["kind"].endswith("square"):
+                        arrnom = np.tile(nom_histo.values(), (variations.shape[0], 1))
+                        arrv = np.sqrt(np.sum(np.square(variations - arrnom), axis=0))
+                        arrup = nom_histo.values() + arrv
+                        arrdo = nom_histo.values() - arrv
+                    hists = {}
+                    hists["Up"] = nom_histo.copy()
+                    a = hists["Up"].view()
+                    a.value = arrup
+
+                    hists["Down"] = nom_histo.copy()
+                    a = hists["Down"].view()
+                    a.value = arrdo
+
+                    for tag in ["Up", "Down"]:
+                        key = f"{region}/{variable}/histo_{histoName}_{nuis_name}{tag.capitalize()}"
+                        tmp_histo = hists[tag]
+                        if key not in dout:
+                            dout[key] = tmp_histo.copy()
+                        else:
+                            dout[key] += tmp_histo.copy()
+    return dout
+
+
 def post_process(results, regions, variables, samples, xss, nuisances, lumi):
     print("Start converting histograms")
 
-    dout = {}
-    for region in regions:
-        for variable in variables:
-            if "axis" not in variables[variable]:
-                continue
-            for histoName in samples:
-                for sample in samples[histoName]["samples"]:
-                    try:
-                        results[sample]["histos"][variable]
-                    except KeyError:
-                        print(results.keys())
-                    h = results[sample]["histos"][variable].copy()
-                    real_axis = list([slice(None) for _ in range(len(h.axes) - 2)])
-                    h = h[tuple(real_axis + [hist.loc(region), slice(None)])].copy()
-                    is_data = samples[histoName].get("is_data", False)
-                    # renorm mcs
-                    if not is_data:
-                        h = renorm(h, xss[sample], results[sample]["sumw"], lumi)
+    cpus = 10
 
-                    tmp_histo = h[tuple(real_axis + [hist.loc("nom")])].copy()
-                    hist_fold(tmp_histo, 3)
-                    if len(real_axis) > 1:
-                        tmp_histo = hist_unroll(tmp_histo)
-                    key = f"{region}/{variable}/histo_{histoName}"
-                    if key not in dout:
-                        dout[key] = tmp_histo.copy()
-                    else:
-                        dout[f"{region}/{variable}/histo_{histoName}"] += (
-                            tmp_histo.copy()
-                        )
+    with concurrent.futures.ProcessPoolExecutor(max_workers=cpus) as executor:
+        tasks = []
+        print("start post-proc in parallel")
+        for region in regions:
+            for variable in variables:
+                if "axis" not in variables[variable]:
+                    continue
+                tasks.append(
+                    executor.submit(
+                        single_post_process,
+                        results,
+                        region,
+                        variable,
+                        samples,
+                        xss,
+                        nuisances,
+                        lumi,
+                    )
+                )
+        concurrent.futures.wait(tasks)
+        print("done post-proc in parallel")
+        results = []
+        for task in tasks:
+            results.append(task.result())
+        dout = add_dict_iterable(results)
 
-                    for nuis in nuisances:
-                        if nuisances[nuis]["type"] != "shape":
-                            continue
-                        if histoName not in nuisances[nuis]["samples"]:
-                            continue
-
-                        for tag in ["up", "down"]:
-                            tmp_histo = h[
-                                tuple(real_axis + [hist.loc(f"{nuis}_{tag}")])
-                            ].copy()
-                            hist_fold(tmp_histo, 3)
-                            if len(real_axis) > 1:
-                                tmp_histo = hist_unroll(tmp_histo)
-                            key = f"{region}/{variable}/histo_{histoName}_{nuis}{tag.capitalize()}"
-                            if key not in dout:
-                                dout[key] = tmp_histo.copy()
-                            else:
-                                dout[f"{region}/{variable}/histo_{histoName}"] += (
-                                    tmp_histo.copy()
-                                )
+    print("start saving in root file")
     fout = uproot.recreate("histos.root")
     for key in dout:
         fout[key] = dout[key]

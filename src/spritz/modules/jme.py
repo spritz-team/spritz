@@ -4,13 +4,20 @@ import numpy as np
 import spritz.framework.variation as variation_module
 
 
+def filter_collection(collection, filter):
+    if len(collection) == 1:
+        return ak.unflatten(collection[filter], len(collection[filter]))
+    else:
+        return collection[filter]
+
+
 def jet_veto(events, cfg):
     cset = correctionlib.CorrectionSet.from_file(cfg["jetvetomaps"])
     key = cfg["jme"]["jet_veto_tag"]
     jet_phi = events.Jet.phi
     jet_eta = events.Jet.eta
     jet_veto = cset[key].evaluate("jetvetomap", jet_eta, jet_phi)
-    events["Jet"] = events.Jet[jet_veto == 0]
+    events["Jet"] = filter_collection(events.Jet, jet_veto == 0)
     return events
 
 
@@ -28,7 +35,7 @@ def remove_jets_HEM_issue(events, cfg):
 # CMSJME in awkward
 
 
-def correct_jets_mc_jec(
+def correct_jets_mc(
     events, variations: variation_module.Variation, cfg, run_variations=False
 ):
     cset_jerc = correctionlib.CorrectionSet.from_file(cfg["jet_jerc"])
@@ -142,23 +149,17 @@ def correct_jets_mc_jec(
                 jet_map[f"jet_{variable}"] * sf_jers[tag]
             )
 
-    variations.register_variation(
-        columns=[
-            ("Jet", "pt"),
-            ("Jet", "mass"),
-        ],
-        variation_name="JER_up",
-    )
-    variations.register_variation(
-        columns=[
-            ("Jet", "pt"),
-            ("Jet", "mass"),
-        ],
-        variation_name="JER_up",
-    )
+    for tag in ["up", "down"]:
+        variations.register_variation(
+            columns=[
+                ("Jet", "pt"),
+                ("Jet", "mass"),
+            ],
+            variation_name=f"JER_{tag}",
+        )
 
     for variable in ["pt", "mass"]:
-        jet_map[f"jet_{variable}"] *= sf_jers["nom"]
+        jet_map[f"jet_{variable}"] = jet_map[f"jet_{variable}"] * sf_jers["nom"]
 
     # do jes
     for unc in jme_cfg["jes"]:
@@ -167,24 +168,22 @@ def correct_jets_mc_jec(
             jet_map["jet_eta"],
             jet_map["jet_pt"],
         )
+
         for variable in ["pt", "mass"]:
-            events[("Jet", f"{variable}_up")] = jet_map[f"jet_{variable}"] * (1 + delta)
-            events[("Jet", f"{variable}_down")] = jet_map[f"jet_{variable}"] * (
-                1 - delta
+            events[("Jet", f"{variable}_JES_{unc}_up")] = jet_map[f"jet_{variable}"] * (
+                1 + delta
             )
+            events[("Jet", f"{variable}_JES_{unc}_down")] = jet_map[
+                f"jet_{variable}"
+            ] * (1 - delta)
+
+        for tag in ["up", "down"]:
             variations.register_variation(
                 columns=[
                     ("Jet", "pt"),
                     ("Jet", "mass"),
                 ],
-                variation_name=f"JES_{unc}_up",
-            )
-            variations.register_variation(
-                columns=[
-                    ("Jet", "pt"),
-                    ("Jet", "mass"),
-                ],
-                variation_name=f"JES_{unc}_up",
+                variation_name=f"JES_{unc}_{tag}",
             )
     for variable in ["pt", "mass"]:
         events[("Jet", variable)] = jet_map[f"jet_{variable}"]
