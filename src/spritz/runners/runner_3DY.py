@@ -31,7 +31,7 @@ from spritz.modules.gen_analysis import gen_analysis
 from spritz.modules.jet_sel import cleanJet, jetSel
 from spritz.modules.jme import (
     correct_jets_data,
-    correct_jets_mc_jec,
+    correct_jets_mc,
     jet_veto,
     remove_jets_HEM_issue,
 )
