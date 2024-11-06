@@ -1,10 +1,13 @@
 # using python3.10
+coffea
+scipy
+numba
 uproot
 awkward
 numpy
 vector
 pandas
-correctionlib git@github.com:giorgiopizz/correctionlib
+correctionlib 
 onnxruntime
 hist
 matplotlib

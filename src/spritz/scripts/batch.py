@@ -140,6 +140,9 @@ def main():
     an_dict = get_analysis_dict()
     chunks = preprocess_chunks(an_dict["year"])
     dryRun = False
+    runner_default = f"{get_fw_path()}/src/spritz/runners/runner_default.py"
+
+    runner_name = an_dict["runner"] if "runner" in an_dict else runner_default 
 
     if len(sys.argv) > 1:
         dryRun = sys.argv[1] == "-dr"
@@ -152,7 +155,7 @@ def main():
         clean_up=True,
         start=start,
         dryRun=dryRun,
-        script_name=f"{get_fw_path()}/src/spritz/runners/runner_default.py",
+        script_name=runner_name,
     )
 
 
