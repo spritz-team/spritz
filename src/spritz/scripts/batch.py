@@ -68,6 +68,11 @@ def submit(
         # "hercules02.hcms.it",
     ]
 
+    # if running on lxplus we probably want to avoid specifying machines
+    # on which to run jobs
+
+    if "lxplus" in os.uname()[1]: machines = []
+
     print("N chunks", len(new_chunks))
     print(sorted(list(set(list(map(lambda k: k["data"]["dataset"], new_chunks))))))
 
