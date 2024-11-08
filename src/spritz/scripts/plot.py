@@ -299,7 +299,7 @@ def plot(
         markersize=4,
     )
     ax[1].plot(edges, np.ones_like(edges), color="black", linestyle="dashed")
-    ax[1].set_ylim(0.7, 1.3)
+    ax[1].set_ylim(0.9, 1.1)
     ax[1].set_xlim(np.min(edges), np.max(edges))
     ax[0].set_ylabel("Events")
     ax[1].set_ylabel("DATA / MC")

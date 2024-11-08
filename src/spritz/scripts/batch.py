@@ -100,7 +100,8 @@ def submit(
     proc.wait()
 
     txtsh = "#!/bin/bash\n"
-    txtsh += f"source {get_fw_path()}/start.sh\n"
+    txtsh += "tar -axvf spritz.tar.xz\n"
+    txtsh += "source start.sh\n"
     txtsh += f"time python {script_name} {path_an}\n"
 
     with open("condor/run.sh", "w") as file:
@@ -112,7 +113,7 @@ def submit(
 
     txtjdl += "should_transfer_files = YES\n"
     txtjdl += "transfer_input_files = $(Folder)/chunks_job.pkl, "
-    txtjdl += f" {script_name}, {get_fw_path()}/data/{an_dict['year']}/cfg.json\n"
+    txtjdl += f" {script_name}, {get_fw_path()}/spritz.tar.xz, {get_fw_path()}/data/{an_dict['year']}/cfg.json\n"
     txtjdl += 'transfer_output_remaps = "results.pkl = $(Folder)/chunks_job.pkl"\n'
     txtjdl += "output = $(Folder)/out.txt\n"
     txtjdl += "error  = $(Folder)/err.txt\n"

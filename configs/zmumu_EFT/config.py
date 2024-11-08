@@ -35,28 +35,24 @@ datasets = {}
 
 datasets["DYmm"] = {
     "files": "DYJetsToMuMu_M-50",
-    "task_weight": 8,
-    "max_chunks": 1
+    "task_weight": 8
 }
 
 datasets["DYee"] = {
     "files": "DYJetsToEE_M-50",
-    "task_weight": 8,
-     "max_chunks": 1
+    "task_weight": 8
 }
 
 
 datasets["DYtt"] = {
     "files": "DYJetsToTauTau_M-50_AtLeastOneEorMuDecay",
-    "task_weight": 8,
-    "max_chunks": 1
+    "task_weight": 8
 }
 
 
 datasets["TTJets"] = {
     "files": "TTJets",
-    "task_weight": 8,
-     "max_chunks": 1
+    "task_weight": 8
 }
 
 top_samples = [
@@ -72,27 +68,23 @@ for i, sample in enumerate(
 ):
     datasets[sample] = {
         "files": sample,
-        "task_weight": 8,
-        "max_chunks": 1
+        "task_weight": 8
     }
 
 for sample in ["WW", "WZ", "ZZ"]:
     datasets[sample] = {
         "files": f"{sample}_TuneCP5_13TeV-pythia8",
-        "task_weight": 8,
-        "max_chunks": 1
+        "task_weight": 8
     }
 
 datasets["WJetsToLNu"] = {
     "files": "WJetsToLNu-LO",
-    "task_weight": 8,
-    "max_chunks": 1
+    "task_weight": 8
 }
 
 datasets["GGToLL"] = {
     "files": "GGToLL_M50",
-    "task_weight": 8,
-    "max_chunks": 1
+    "task_weight": 8
 }
 
 
@@ -151,62 +143,63 @@ samples["Data"] = {
     "samples": samples_data,
     "is_data": True,
 }
-
-samples["DYee"] = {
-    "samples": ["DYee"],
+#####
+samples["WJetsToLNu"] = {
+    "samples": ["WJetsToLNu"],
 }
-
-colors["DYee"] = cmap_pastel[0]
-
-samples["DYmm"] = {
-    "samples": ["DYmm"],
+colors["WJetsToLNu"] = cmap_pastel[5]
+#####
+samples["GGToLL"] = {
+    "samples": ["GGToLL"],
 }
-
-colors["DYmm"] = cmap_pastel[1]
-
-samples["DYtt"] = {
-    "samples": ["DYtt"],
-}
-
-colors["DYtt"] = cmap_pastel[2]
-
-samples["Top"] = {
-    "samples": [
-        "TT",
-    ]
-    + top_samples,
-}
-colors["Top"] = cmap_pastel[3]
-
+colors["GGToLL"] = cmap_pastel[6]
+#####
 samples["VV"] = {
     "samples": ["WW", "WZ", "ZZ"],
 }
 colors["VV"] = cmap_pastel[4]
-
-
-samples["WJetsToLNu"] = {
-    "samples": ["WJetsToLNu"],
+#####
+samples["Top"] = {
+    "samples": [
+        "TTJets",
+    ]
+    + top_samples,
 }
-
-colors["WJetsToLNu"] = cmap_pastel[5]
-
-samples["GGToLL"] = {
-    "samples": ["GGToLL"],
+colors["Top"] = cmap_pastel[3]
+#####
+samples["DYtt"] = {
+    "samples": ["DYtt"],
 }
+colors["DYtt"] = cmap_pastel[2]
+#####
+samples["DYee"] = {
+    "samples": ["DYee"],
+}
+colors["DYee"] = cmap_pastel[0]
+#####
+samples["DYmm"] = {
+    "samples": ["DYmm"],
+}
+colors["DYmm"] = cmap_pastel[1]
+#####
 
-colors["GGToLL"] = cmap_pastel[6]
+
+
 
 # regions
 preselections = lambda events: (events.mll > 60) & (events.mll < 180)  # noqa E731
 
 regions = {}
-for cat in ["ee", "mm"]:
-    regions[f"sr_jet_inc_{cat}"] = {
-        "func": lambda events: (abs(events.mll - 91) < 15) & events[cat],
-        "mask": 0,
-        "btagging": "bVeto",
-    }
 
+regions["inc_ee"] = {
+    "func": lambda events: events["ee"],
+    "mask": 0,
+}
+
+regions["inc_mm"] = {
+    "func": lambda events: events["mm"],
+    "mask": 0,
+}
 
 variables = {}
 

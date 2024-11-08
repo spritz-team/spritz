@@ -36,12 +36,13 @@ def read_inputs(inputs: list[str]) -> list[Result]:
     inputs_obj = []
     for input in inputs:
         job_result = read_chunks(input)
+        #print("JOB RESULT")
+        #print(job_result, job_result == -99999, inputs)
         new_job_result = []
         if isinstance(job_result, list):
             for job_result_single in job_result:
                 if job_result_single["result"] != {}:
                     new_job_result.append(job_result_single["result"]["real_results"])
-
             # job_result = new_job_result
             # if check_input(job_result):
             #     inputs_obj.append(job_result["real_results"])
@@ -72,7 +73,6 @@ def postprocess_inputs(inputs):
 
 
 def reduction(inputs, reduce_function, output):
-    # print(inputs)
     inputs_obj = read_inputs(inputs)
     result = reduce_function(inputs_obj)
     postprocess_inputs(inputs)
@@ -128,13 +128,10 @@ def main():
     basepath = os.path.abspath("condor")
     inputs = glob.glob(f"{basepath}/job_*/chunks_job.pkl")[:]
     output = f"{basepath}/results_merged_new.pkl"
-    print(inputs)
-    print(output)
     reduce_function = sum
     reduce_function = add_dict_iterable
     elements_for_task = 10
     cpus = 10
-
     with concurrent.futures.ProcessPoolExecutor(max_workers=cpus) as executor:
         create_tree(
             inputs,
@@ -147,7 +144,6 @@ def main():
     results = read_chunks(output)
     # datasets = list(filter(lambda k: "root:" not in k, results.keys()))
     datasets = results.keys()
-    print([(dataset, results[dataset]["sumw"]) for dataset in datasets])
 
 
 if __name__ == "__main__":
