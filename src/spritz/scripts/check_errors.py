@@ -89,26 +89,27 @@ def main():
             tasks.append(pool.submit(check_job, job_id))
         concurrent.futures.wait(tasks)
         failed = []
-        running = 0
+        running = []
         total = 0
         for task in tasks:
             res = task.result()
             if res[1] > 0:
                 failed.append(res[0])
-                # print(res[2])
             if res[1] == 2:
                 print("Real error!", res[0])
             if res[1] == -1:
-                running += 1
+                running.append(res[0])
             total += 1
 
-        print("Failed jobs")
-        print(sorted(failed))
-        print("queue 1 Folder in " + " ".join(sorted(failed)))
-        print("\n")
-        print("Failed", len(failed))
+        if len(failed)>0:
+            print("\nFailed jobs")
+            print(sorted(failed))
+        if len(running)>0:
+            print("\nStill running jobs")
+            print(sorted(running))
+        print("\nFailed", len(failed))
         print("Total", total)
-        print("Still running", running)
+        print("Still running", len(running), "\n")
 
 
 if __name__ == "__main__":
