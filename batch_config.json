@@ -1,0 +1,4 @@
+{
+  "X509_USER_PROXY": "/afs/cern.ch/user/f/fstager/.x509up_u140320",
+  "SINGULARITY_IMAGE": "/eos/user/f/fstager/spritz_env.sif"
+}
