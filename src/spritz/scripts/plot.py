@@ -98,10 +98,9 @@ def plot(
     }
 
     for histoName in histos:
-        is_signal = samples[histoName].get("is_signal", False)
         if samples[histoName].get("is_data", False):
             continue
-        if is_signal:
+        if samples[histoName].get("is_signal", False):
             hlast += histos[histoName]["nom"].copy()
         else:
             hlast += histos[histoName]["nom"].copy()
@@ -157,14 +156,12 @@ def plot(
     )  # ,fontsize=16)
     # for i, histoName in enumerate(["Top", "DY", "Zjj", "Data"]):
     for i, histoName in enumerate(histos.keys()):
-        is_signal = samples[histoName].get("is_signal", False)
         y = histos[histoName]["nom"].copy()
         integral = round(np.sum(y), 2)
-        if histoName == "Data":
+        if samples[histoName].get("is_data", False):
             yup = histos[histoName]["stat_up"] - y
             ydown = y - histos[histoName]["stat_down"]
-            # if "sr" in region:
-            if True:
+            if "sr" in region:
                 y_blind = np.zeros_like(y)
                 yup_blind = np.zeros_like(y)
                 ydown_blind = np.zeros_like(y)
@@ -182,8 +179,8 @@ def plot(
             )
             continue
         color = colors[histoName]
-        if is_signal:
-            ax[0].stairs(y, edges, zorder=10, linewidth=2, color=color)
+        #if samples[histoName].get("is_signal", False):
+        #    ax[0].stairs(y, edges, zorder=10, linewidth=2, color=color)
 
         if isinstance(tmp_sum, int):
             tmp_sum = y.copy()
@@ -205,8 +202,10 @@ def plot(
 
     # unc = np.max([mc_err_up, mc_err_down], axis=0)
     # unc = round(np.sum(unc + mc), 2)
-    unc_up = round(np.sum(vvar_up) / np.sum(hlast_bkg) * 100, 2)
-    unc_down = round(np.sum(vvar_do) / np.sum(hlast_bkg) * 100, 2)
+    #unc_up = round(np.sum(vvar_up) / np.sum(hlast_bkg) * 100, 2)
+    unc_up = round(np.sum(vvar_up) / np.sum(hlast_bkg), 2)
+    #unc_down = round(np.sum(vvar_do) / np.sum(hlast_bkg) * 100, 2)
+    unc_down = round(np.sum(vvar_do) / np.sum(hlast_bkg), 2)
     # ax[0].stairs(mc+mc_err_up, edges, baseline=mc-mc_err_down, fill=True, alpha=0.2, label=f"Syst [$\pm${unc}%]")
     # ax[0].stairs(mc+mc_err_up, edges, baseline=mc-mc_err_down, fill=True, alpha=0.2, label=f"Syst [-{unc_down}, +{unc_up}]%")
     unc_dict = dict(
@@ -214,13 +213,14 @@ def plot(
     )
     ax[0].stairs(
         # hlast_bkg + vvar_up,
-        hlast_bkg + vvar_up,
+        hlast + vvar_up,
         edges,
         # baseline=hlast_bkg - vvar_do,
         baseline=hlast - vvar_do,
         label=f"Syst [-{unc_down}, +{unc_up}]%",
         **unc_dict,
     )
+
     integral = round(np.sum(hlast), 2)
     # print(tmp_sum - hlast)
     ax[0].stairs(
@@ -235,7 +235,7 @@ def plot(
         framealpha=0.8,
         fontsize=8,
     )
-    ax[0].set_ylim(max(0.5, hmin), np.max(hlast_bkg) * 1e2)
+    ax[0].set_ylim(max(0.5, hmin), np.max(hlast) * 1e2)
 
     ratio_err_up = vvar_up / hlast
     ratio_err_down = vvar_do / hlast
@@ -279,8 +279,8 @@ def plot(
         ydata_down = np.sqrt(hlast_bkg).copy()
 
     # Blind all signal region
-    # if "sr" in region:
-    if True:
+    if "sr" in region:
+    #if True:
         ydata_blind = np.zeros_like(hlast_bkg)
         ydata_up_blind = np.zeros_like(hlast_bkg)
         ydata_down_blind = np.zeros_like(hlast_bkg)
