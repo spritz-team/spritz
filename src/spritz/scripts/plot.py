@@ -40,6 +40,7 @@ def plot(
     lumi,
     colors,
     year_label,
+    blind,
     variable_label=None,
 ):
     print("Doing ", region, variable)
@@ -125,23 +126,8 @@ def plot(
     hlast = np.where(hlast >= 1e-6, hlast, 1e-6)
     hlast_bkg = np.where(hlast_bkg >= 1e-6, hlast_bkg, 1e-6)
 
-    # mc_err_up = 0
-    # mc_err_up = np.sqrt(mc_err_up)
-    # mc_err_down = np.sqrt(mc_err_down)
-    # syst_up = np.sqrt(syst_up)
-    # syst_down = np.sqrt(syst_down)
-    # stat_up = np.sqrt(syst_up)
-    # stat_down = np.sqrt(syst_down)
-    # mc = np.where(mc >= 1e-5, mc, 1e-5)
-    # print('time after sum mc', time.time()-start)
-    # start = time.time()
-
-    ###
-
     signal_tot = hlast - hlast_bkg
-    # significance = signal_tot / np.sqrt(hlast_bkg)
     significance = signal_tot / hlast_bkg
-    # print(region, variable, significance)
     blind_mask = significance > 0.10
 
     x = axis.centers
@@ -160,11 +146,10 @@ def plot(
         is_signal = samples[histoName].get("is_signal", False)
         y = histos[histoName]["nom"].copy()
         integral = round(np.sum(y), 2)
-        if histoName == "Data":
+        if samples[histoName].get("is_data", False):
             yup = histos[histoName]["stat_up"] - y
             ydown = y - histos[histoName]["stat_down"]
-            # if "sr" in region:
-            if True:
+            if blind:
                 y_blind = np.zeros_like(y)
                 yup_blind = np.zeros_like(y)
                 ydown_blind = np.zeros_like(y)
@@ -178,7 +163,7 @@ def plot(
                 fmt="ko",
                 markersize=4,
                 label="Data" + f" [{integral}]",
-                zorder=len(histos) - 1,
+                zorder=len(histos),
             )
             continue
         color = colors[histoName]
@@ -201,41 +186,32 @@ def plot(
             edgecolor=darker_color(color),
             linewidth=1.0,
         )
-    # print('time loop stairs', time.time()-start)
 
-    # unc = np.max([mc_err_up, mc_err_down], axis=0)
-    # unc = round(np.sum(unc + mc), 2)
     unc_up = round(np.sum(vvar_up) / np.sum(hlast_bkg) * 100, 2)
     unc_down = round(np.sum(vvar_do) / np.sum(hlast_bkg) * 100, 2)
-    # ax[0].stairs(mc+mc_err_up, edges, baseline=mc-mc_err_down, fill=True, alpha=0.2, label=f"Syst [$\pm${unc}%]")
-    # ax[0].stairs(mc+mc_err_up, edges, baseline=mc-mc_err_down, fill=True, alpha=0.2, label=f"Syst [-{unc_down}, +{unc_up}]%")
     unc_dict = dict(
         fill=True, hatch="///", color="darkgrey", facecolor="none", zorder=9
     )
     ax[0].stairs(
-        # hlast_bkg + vvar_up,
         hlast_bkg + vvar_up,
         edges,
-        # baseline=hlast_bkg - vvar_do,
-        baseline=hlast - vvar_do,
+        baseline=hlast_bkg - vvar_do,
         label=f"Syst [-{unc_down}, +{unc_up}]%",
         **unc_dict,
     )
     integral = round(np.sum(hlast), 2)
-    # print(tmp_sum - hlast)
     ax[0].stairs(
         hlast, edges, label=f"Tot MC [{integral}]", color="darkgrey", linewidth=1
     )
     ax[0].set_yscale("log")
     ax[0].legend(
         loc="upper center",
-        # loc=(0.016, 0.75),
         frameon=True,
         ncols=3,
         framealpha=0.8,
         fontsize=8,
     )
-    ax[0].set_ylim(max(0.5, hmin), np.max(hlast_bkg) * 1e2)
+    ax[0].set_ylim(max(0.5, hmin) * 1e-2, np.max(hlast) * 1e2)
 
     ratio_err_up = vvar_up / hlast
     ratio_err_down = vvar_do / hlast
@@ -247,40 +223,8 @@ def plot(
         color="lightgray",
     )
 
-    # ratio_stat_up = stat_up / mc
-    # ratio_stat_down = stat_down / mc
-    # ax[1].stairs(
-    #     1 + ratio_stat_up,
-    #     edges,
-    #     baseline=1 - ratio_stat_down,
-    #     # fill=True,
-    #     color="lightgreen",
-    #     linestyle="dashed",
-    #     linewidth=2,
-    # )
-    # ratio_err_up = syst_up / mc
-    # ratio_err_down = syst_down / mc
-    # ax[1].stairs(
-    #     1 + ratio_err_up,
-    #     edges,
-    #     baseline=1 - ratio_err_down,
-    #     # fill=True,
-    #     color="red",
-    #     linestyle="dashed",
-    #     linewidth=2,
-    # )
-    if "Data" in histos:
-        ydata = histos["Data"]["nom"]
-        ydata_up = histos["Data"]["stat_up"] - ydata
-        ydata_down = ydata - histos["Data"]["stat_down"]
-    else:
-        ydata = hlast_bkg.copy()
-        ydata_up = np.sqrt(hlast_bkg).copy()
-        ydata_down = np.sqrt(hlast_bkg).copy()
-
     # Blind all signal region
-    # if "sr" in region:
-    if True:
+    if blind:
         ydata_blind = np.zeros_like(hlast_bkg)
         ydata_up_blind = np.zeros_like(hlast_bkg)
         ydata_down_blind = np.zeros_like(hlast_bkg)
@@ -299,7 +243,8 @@ def plot(
         markersize=4,
     )
     ax[1].plot(edges, np.ones_like(edges), color="black", linestyle="dashed")
-    ax[1].set_ylim(0.7, 1.3)
+    delta = 0.3
+    ax[1].set_ylim(1.0 - delta, 1.0 + delta)
     ax[1].set_xlim(np.min(edges), np.max(edges))
     ax[0].set_ylabel("Events")
     ax[1].set_ylabel("DATA / MC")
@@ -315,7 +260,6 @@ def plot(
         bbox_inches="tight",
     )
     plt.close()
-    # print('time after fig save', time.time()-start)
 
 
 def main():
@@ -325,14 +269,12 @@ def main():
     regions = analysis_dict["regions"]
     variables = analysis_dict["variables"]
     nuisances = analysis_dict["nuisances"]
+    blind = analysis_dict.get("blind", False)
 
     colors = analysis_dict["colors"]
-    # plots = analysis_dict["plots"]
-    # scales = analysis_dict["scales"]
     plot_label = analysis_dict["plot_label"]
     year_label = analysis_dict.get("year_label", "Run-II")
     lumi = analysis_dict["lumi"]
-    # plot_ylim_ratio = analysis_dict["plot_ylim_ratio"]
     print("Doing plots")
 
     proc = subprocess.Popen(
@@ -348,22 +290,6 @@ def main():
         "samples": dict((skey, "1.00") for skey in samples),
     }
 
-    # regions = ["top_cr", "dypu_cr", "sr_inc"]
-    # categories = ["ee", "mm"]
-    # regions = [f"{region}_{cat}" for region in regions for cat in categories]
-
-    # variables_orig = variables.copy()
-    # variables = [
-    #     "detajj_fits",
-    #     "MET_fits",
-    #     "dnn_fits",
-    #     "dnn_fits_2",
-    #     "dnn_ptll",
-    # ]
-    # variables = list(filter(lambda k: k in variables_orig, variables))
-    # variables = {variable: {"axis": 0} for variable in variables}
-    # variables["MET_fits"]["label"] = "Events"
-
     cpus = 10
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=cpus) as executor:
@@ -374,8 +300,6 @@ def main():
             for variable in variables:
                 if "axis" not in variables[variable]:
                     continue
-                # if variable != "dnn_ptll" or region != "sr_inc_mm":
-                #     continue
                 tasks.append(
                     executor.submit(
                         plot,
@@ -387,27 +311,13 @@ def main():
                         lumi,
                         colors,
                         year_label,
+                        blind,
                         variables[variable].get("label"),
                     )
                 )
         concurrent.futures.wait(tasks)
         for task in tasks:
             task.result()
-
-    # for region in regions:
-    #     for variable in variables:
-    #         if "axis" not in variables[variable]:
-    #             continue
-    #         plot(
-    #             input_file,
-    #             region,
-    #             variable,
-    #             samples,
-    #             nuisances,
-    #             lumi,
-    #             colors,
-    #             year_label,
-    #         )
 
 
 if __name__ == "__main__":

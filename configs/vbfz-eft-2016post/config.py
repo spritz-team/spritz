@@ -1,5 +1,7 @@
 # ruff: noqa: E501
+
 import json
+from itertools import cycle
 
 import awkward as ak
 import hist
@@ -14,20 +16,21 @@ with open(f"{fw_path}/data/common/lumi.json") as file:
     lumis = json.load(file)
 
 with open(f"{fw_path}/data/{year}/cfg.json") as file:
-    txt = file.read()
-    txt = txt.replace("RPLME_PATH_FW", fw_path)
-    cfg = json.loads(txt)
+    cfg = json.load(file)
 
 lumi = lumis[year]["tot"] / 1000
 plot_label = "VBF-Z"
 year_label = "2016-noHIPM"
-njobs = 300
+njobs = 30
 
+
+plot_op_mode = "validate_sm"
+
+runner = f"{fw_path}/src/spritz/runners/runner_eft.py"
 
 dnn_path = "/gwpool/users/gpizzati/test_processor/my_processor/notebooks/output_model"
 special_analysis_cfg = {
     "do_theory_variations": True,
-    # "do_theory_variations": False,
     "dnn": {
         "model": f"{dnn_path}/model.onnx",
         "scaler": f"{dnn_path}/scaler.txt",
@@ -37,190 +40,70 @@ special_analysis_cfg = {
     },
 }
 
-subsamples_dy = {
-    "hard": "events.hard",
-    "PU": "events.PU",
-}
-
-bins = {
-    "ptll": np.linspace(0, 200, 5),
-    # "dphill": np.linspace(0, 3.14, 10),
-    # "dphijj": np.linspace(0, 3.14, 10),
-    # "mjj": np.linspace(200, 3000, 5),
-    # "detajj": np.linspace(0, 8, 8),
-}
-
-subsamples_sig = {}
-for variable in bins:
-    for i in range(len(bins[variable]) - 1):
-        col = f"events.Gen_{variable}"
-        common_cut = "events.fiducial_cut"
-        if i == 0:
-            subsamples_sig[f"{variable}_{i}"] = (
-                f"{common_cut} & ({col} <= {bins[variable][i+1]})"
-            )
-        elif i == len(bins[variable]) - 2:
-            subsamples_sig[f"{variable}_{i}"] = (
-                f"{common_cut} & ({col} > {bins[variable][i]})"
-            )
-        else:
-            subsamples_sig[f"{variable}_{i}"] = (
-                f"{common_cut} & ({col} > {bins[variable][i]}) & ({col} <= {bins[variable][i+1]})"
-            )
-
-subsamples_sig["outfiducial"] = "~events.fiducial_cut"
-print(subsamples_sig)
-
 datasets = {}
+
+all_events_mask = "ak.ones_like(events.run) == 1"
+ops = ["cW", "cHbox", "cHDD", "cHW", "cHWB", "cHj1", "cHj3", "cHl1", "cHl3"]
+rwgt_col = "events.rwgt"
+
+subsamples_eft = {
+    "SM": (
+        "ak.ones_like(events.run) == 1",
+        f"{rwgt_col}[:, 0]",
+    ),
+}
+
+for i in range(len(ops)):
+    op = ops[i]
+    pos_rwgt = 2 * i + 2
+    neg_rwgt = 2 * i + 1
+
+    lin = f"0.5 * ({rwgt_col}[:, {pos_rwgt}] - {rwgt_col}[:, {neg_rwgt}])"
+    quad = f"0.5 * ({rwgt_col}[:, {pos_rwgt}] + {rwgt_col}[:, {neg_rwgt}] - 2 * {rwgt_col}[:, 0])"
+
+    subsamples_eft[f"{op}_lin"] = (all_events_mask, lin)
+    subsamples_eft[f"{op}_quad"] = (all_events_mask, quad)
 
 
 datasets["Zjj"] = {
     "files": "EWK_LLJJ_MLL-50_MJJ-120",
     "task_weight": 8,
-    "subsamples": subsamples_sig,
 }
 
-datasets["Int"] = {
-    "files": "EWK_LLJJ_MLL-50_MJJ-120_QCD",
-}
-
-# datasets["DY_NLO"] = {
-#     "files": "DYJetsToLL_M-50",
-#     "task_weight": 8,
-#     "weight": "0.5",
-#     "subsamples": subsamples_dy,
-# }
-
-for njet in [0, 1, 2]:
-    datasets[f"DY-{njet}J"] = {
-        "files": f"DYJetsToLL_{njet}J",
-        "task_weight": 8,
-        # "weight": "0.5",
-        "subsamples": subsamples_dy,
-    }
-
-# # FIXME limit DY chunks
-# for dataset in datasets:
-#     if "DY" in dataset:
-#         datasets[dataset]["max_chunks"] = 1000
-
-
-datasets["TT"] = {
-    "files": "TTTo2L2Nu",
+datasets["Zjj_EFT"] = {
+    "files": "EWK_LLJJ_MLL-50_MJJ-120_EFT",
+    "subsamples": subsamples_eft,
     "task_weight": 8,
-    "top_pt_rwgt": True,
 }
-
-for i, sample in enumerate(
-    [
-        "ST_s-channel",
-        "ST_t-channel_antitop",
-        "ST_t-channel_top",
-        "ST_tW_antitop",
-        "ST_tW_top",
-    ]
-):
-    datasets[f"single_top_{i}"] = {
-        "files": sample,
-        "task_weight": 8,
-    }
-
-for sample in ["WW", "WZ", "ZZ"]:
-    datasets[sample] = {
-        "files": f"{sample}_TuneCP5_13TeV-pythia8",
-        "task_weight": 8,
-    }
 
 for dataset in datasets:
     datasets[dataset]["read_form"] = "mc"
 
-
-DataRun = [
-    ["F", "Run2016F-UL2016-v1"],
-    ["G", "Run2016G_UL2016-v1"],
-    ["H", "Run2016H_UL2016-v1"],
-]
-
-DataSets = ["SingleMuon", "SingleElectron", "DoubleMuon", "DoubleEG"]
-
-
-DataTrig = {
-    "SingleMuon": "events.SingleMu",
-    "SingleElectron": "(~events.SingleMu) & events.SingleEle",
-    "DoubleMuon": "(~events.SingleMu) & (~events.SingleEle) & events.DoubleMu",
-    "DoubleEG": "(~events.SingleMu) & (~events.SingleEle) & (~events.DoubleMu) & events.DoubleEle",
-}
-
-
-samples_data = []
-for era, sd in DataRun:
-    for pd in DataSets:
-        tag = pd + "_" + sd
-
-        if "DoubleMuon" in pd and "Run2016G" in sd:
-            tag = tag.replace("v1", "v2")
-
-        datasets[f"{pd}_{era}"] = {
-            "files": tag,
-            "trigger_sel": DataTrig[pd],
-            "read_form": "data",
-            "is_data": True,
-            "era": f"UL2016{era}",
-        }
-        samples_data.append(f"{pd}_{era}")
-
-
 samples = {}
 colors = {}
 
-samples["Data"] = {
-    "samples": samples_data,
-    "is_data": True,
-}
 
+samples["Zjj_EFT_sm"] = {
+    "samples": ["Zjj_EFT_SM"],
+}
+colors["Zjj_EFT_sm"] = cmap_petroff[0]
 
-samples["Zjj_outfiducial"] = {
-    "samples": ["Zjj_outfiducial"],
-    "is_signal": False,
-}
-colors["Zjj_outfiducial"] = cmap_petroff[5]
-samples["Top"] = {
-    "samples": [
-        "TT",
-    ]
-    + [f"single_top_{i}" for i in range(5)],
-}
-colors["Top"] = cmap_petroff[1]
+cmap_signal = cycle(cmap_pastel)
+for op in ["cW"]:
+    samples[f"Zjj_EFT_{op}_lin"] = {
+        "samples": [f"Zjj_EFT_{op}_lin"],
+    }
+    colors[f"Zjj_EFT_{op}_lin"] = next(cmap_signal)
 
-samples["VV"] = {
-    "samples": ["WW", "WZ", "ZZ"],
-}
-colors["VV"] = cmap_petroff[2]
+    samples[f"Zjj_EFT_{op}_quad"] = {
+        "samples": [f"Zjj_EFT_{op}_quad"],
+    }
+    colors[f"Zjj_EFT_{op}_quad"] = next(cmap_signal)
 
-samples["Int"] = {
-    "samples": ["Int"],
+samples["Zjj_sm"] = {
+    "samples": ["Zjj"],
 }
-colors["Int"] = cmap_petroff[4]
-
-samples["DY_PU"] = {
-    "samples": [f"DY-{j}J_PU" for j in range(3)],
-    # "samples": ["DY_NLO_PU"] + [f"DY-{j}J_PU" for j in range(3)],
-    # "samples": ["DY_NLO_PU"],
-}
-colors["DY_PU"] = cmap_petroff[3]
-samples["DY_hard"] = {
-    "samples": [f"DY-{j}J_hard" for j in range(3)],
-    # "samples": ["DY_NLO_hard"] + [f"DY-{j}J_hard" for j in range(3)],
-    # "samples": ["DY_NLO_hard"],
-}
-
-colors["DY_hard"] = cmap_petroff[0]
-
-samples["Zjj_fiducial"] = {
-    "samples": [f"Zjj_ptll_{i}" for i in range(len(bins["ptll"]) - 1)],
-    "is_signal": True,
-}
-colors["Zjj_fiducial"] = cmap_pastel[0]
+colors["Zjj_sm"] = cmap_pastel[0]
 
 # variable_to_unfold = "detajj"
 # for i in range(len(bins[variable_to_unfold]) - 1):
@@ -447,29 +330,6 @@ variables["Zeppenfeld_Z"] = {
     "axis": hist.axis.Regular(30, 0, 3, name="Zeppenfeld_Z"),
 }
 
-# variables["Zeppenfeld_Z"] = {
-#     "func": lambda events: ak.fill_none(
-#         0.5
-#         * (
-#             (events.Lepton[:, 0].eta + events.Lepton[:, 1].eta)
-#             - (events.jets[:, 0].eta + events.jets[:, 1].eta)
-#         )
-#         / events.detajj,
-#         -9999.0,
-#     ),
-# }
-
-# variables["Zeppenfeld_l1"] = {
-#     "func": lambda events: ak.fill_none(
-#         (
-#             (events.Lepton[:, 0].eta)
-#             - 0.5 * (events.jets[:, 0].eta + events.jets[:, 1].eta)
-#         )
-#         / events.detajj,
-#         -9999.0,
-#     ),
-# }
-
 variables["MET"] = {
     "func": lambda events: events.PuppiMET.pt,
     "axis": hist.axis.Regular(30, 0, 150, name="MET"),
@@ -518,35 +378,6 @@ variables["MET_fits"] = {
     "axis": hist.axis.Regular(8, 0, 150, name="MET_fits"),
 }
 
-# for variable_to_unfold in bins:
-#     variables[f"dnn_{variable_to_unfold}"] = {
-#         "axis": [
-#             hist.axis.Regular(10, 0, 1, name="dnn"),
-#             hist.axis.Variable(bins[variable_to_unfold], name=variable_to_unfold),
-#         ]
-#     }
-
-# variables["dnn_mjj"] = {
-#     "axis": [
-#         hist.axis.Regular(10, 0, 1, name="dnn"),
-#         hist.axis.Variable(bins["mjj"], name="mjj"),
-#     ]
-# }
-# variables["dnn_ptll"] = {
-#     "axis": [
-#         hist.axis.Regular(10, 0, 1, name="dnn"),
-#         hist.axis.Variable(bins["ptll"], name="ptll"),
-#     ]
-# }
-
-# variables["dnn_dphill"] = {
-#     "axis": [
-#         hist.axis.Regular(10, 0, 1, name="dnn"),
-#         hist.axis.Variable(bins["dphill"], name="dphill"),
-#     ]
-# }
-
-
 nuisances = {}
 mcs = [sample for sample in samples if not samples[sample].get("is_data", False)]
 
@@ -556,117 +387,6 @@ nuisances["lumi"] = {
     "type": "lnN",
     "samples": dict((skey, "1.02") for skey in mcs),
 }
-
-
-for shift in [
-    "lf",
-    "hf",
-    "hfstats1",
-    "hfstats2",
-    "lfstats1",
-    "lfstats2",
-    "cferr1",
-    "cferr2",
-    "jes",
-]:
-    nuisances[f"btag_{shift}"] = {
-        "name": "CMS_btag_SF_" + shift,
-        "kind": "suffix",
-        "type": "shape",
-        "samples": dict((skey, ["1", "1"]) for skey in mcs),
-    }
-
-
-for js in cfg["jme"]["jes"]:
-    nuisances[f"JES_{js}"] = {
-        "name": "CMS_jet_scale_" + js,
-        "kind": "suffix",
-        "type": "shape",
-        "samples": dict((skey, ["1", "1"]) for skey in mcs),
-    }
-
-nuisances["JER"] = {
-    "name": "CMS_jet_res",
-    "kind": "suffix",
-    "type": "shape",
-    "samples": dict((skey, ["1", "1"]) for skey in mcs),
-}
-
-nuisances["prefireWeight"] = {
-    "name": "CMS_prefireWeight",
-    "kind": "suffix",
-    "type": "shape",
-    "samples": dict((skey, ["1", "1"]) for skey in mcs),
-}
-
-nuisances["PU"] = {
-    "name": "CMS_PU",
-    "kind": "suffix",
-    "type": "shape",
-    "samples": dict((skey, ["1", "1"]) for skey in mcs),
-}
-
-nuisances["PUID_SF"] = {
-    "name": "CMS_PUID_SF",
-    "kind": "suffix",
-    "type": "shape",
-    "samples": dict((skey, ["1", "1"]) for skey in mcs),
-}
-
-nuisances["ele_reco"] = {
-    "name": "CMS_ele_reco",
-    "kind": "suffix",
-    "type": "shape",
-    "samples": dict((skey, ["1", "1"]) for skey in mcs),
-}
-
-nuisances["ele_idiso"] = {
-    "name": "CMS_ele_idiso",
-    "kind": "suffix",
-    "type": "shape",
-    "samples": dict((skey, ["1", "1"]) for skey in mcs),
-}
-
-nuisances["mu_idiso"] = {
-    "name": "CMS_mu_idiso",
-    "kind": "suffix",
-    "type": "shape",
-    "samples": dict((skey, ["1", "1"]) for skey in mcs),
-}
-
-for sname in ["Zjj", "DY"]:
-    mcs_theory_unc = [
-        sample
-        for sample in samples
-        if not samples[sample].get("is_data", False) and (sname in sample)
-    ]
-
-    nuisances[f"PDFWeight_{sname}"] = {
-        "name": f"PDF_{sname}",
-        "kind": "weight_square",
-        "type": "shape",
-        "samples": {
-            skey: [f"PDFWeight_{i}" for i in range(100)] for skey in mcs_theory_unc
-        },
-    }
-
-    nuisances[f"QCDScale_{sname}"] = {
-        "name": f"QCDScale_{sname}",
-        "kind": "weight_envelope",
-        "type": "shape",
-        "samples": {
-            skey: [f"QCDScale_{i}" for i in range(6)] for skey in mcs_theory_unc
-        },
-    }
-
-# nuisances["VV_norm"] = {
-#     "name": "CMS_VV_norm",
-#     "samples": {
-#         "VV": "1.00",
-#     },
-#     "type": "rateParam",
-#     "cuts": [k for k in regions],
-# }
 
 nuisances["Top_norm"] = {
     "name": "CMS_Top_norm",
@@ -687,7 +407,7 @@ nuisances["DY_hard_norm"] = {
 }
 
 nuisances["DY_PU_norm"] = {
-    "name": "CMS_DY_PU_16noHIPM_norm",
+    "name": "CMS_DY_PU_18_norm",
     "samples": {
         "DY_PU": "1.00",
     },

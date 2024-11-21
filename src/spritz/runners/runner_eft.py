@@ -102,6 +102,14 @@ def process(events, **kwargs):
     else:
         events["weight"] = events.genWeight
 
+    if "EFT" in dataset:
+        neft_rwgts = 55
+        events = events[ak.num(events.LHEReweightingWeight) == neft_rwgts]
+        events["rwgt"] = ak.pad_none(
+            events.LHEReweightingWeight, neft_rwgts, clip=True, axis=1
+        )
+        events["rwgt"] = ak.fill_none(events.rwgt, 0.0)
+
     if isData:
         lumimask = LumiMask(cfg["lumiMask"])
         events = lumi_mask(events, lumimask)
@@ -598,6 +606,9 @@ if __name__ == "__main__":
         # if new_chunk["data"]["dataset"] in processed:
         #     continue
         # processed.append(new_chunk["data"]["dataset"])
+
+        # if "EFT" not in new_chunk["data"]["dataset"]:
+        #     continue
 
         try:
             new_chunks[i]["result"] = big_process(process=process, **new_chunk["data"])

@@ -15,6 +15,7 @@ from spritz.framework.framework import (
 def preprocess_chunks(year):
     with open(f"{get_fw_path()}/data/common/forms.json", "r") as file:
         forms_common = json.load(file)
+        print(forms_common)
     with open(f"{get_fw_path()}/data/{year}/forms.json", "r") as file:
         forms_era = json.load(file)
     forms = add_dict(forms_common, forms_era)
@@ -91,12 +92,12 @@ def submit(
         write_chunks(job, f"{folder}/chunks_job_original.pkl")
 
         folders.append(folder.split("/")[-1])
-    proc = subprocess.Popen(f"cp {script_name} condor/", shell=True)
+    proc = subprocess.Popen(f"cp {script_name} condor/runner.py", shell=True)
     proc.wait()
 
     txtsh = "#!/bin/bash\n"
     txtsh += f"source {get_fw_path()}/start.sh\n"
-    txtsh += f"time python {script_name} {path_an}\n"
+    txtsh += f"time python runner.py {path_an}\n"
 
     with open("condor/run.sh", "w") as file:
         file.write(txtsh)
@@ -107,7 +108,7 @@ def submit(
 
     txtjdl += "should_transfer_files = YES\n"
     txtjdl += "transfer_input_files = $(Folder)/chunks_job.pkl, "
-    txtjdl += f" {script_name}, {get_fw_path()}/data/{an_dict['year']}/cfg.json\n"
+    txtjdl += f"runner.py, {get_fw_path()}/data/{an_dict['year']}/cfg.json\n"
     txtjdl += 'transfer_output_remaps = "results.pkl = $(Folder)/chunks_job.pkl"\n'
     txtjdl += "output = $(Folder)/out.txt\n"
     txtjdl += "error  = $(Folder)/err.txt\n"
@@ -140,6 +141,8 @@ def main():
     path_an = os.path.abspath(".")
     an_dict = get_analysis_dict()
     chunks = preprocess_chunks(an_dict["year"])
+    runner_default = f"{get_fw_path()}/src/spritz/runners/runner_default.py"
+    runner = an_dict.get("runner", runner_default)
     dryRun = False
 
     if len(sys.argv) > 1:
@@ -153,7 +156,7 @@ def main():
         clean_up=True,
         start=start,
         dryRun=dryRun,
-        script_name=f"{get_fw_path()}/src/spritz/runners/runner_default.py",
+        script_name=runner,
     )
 
 

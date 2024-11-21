@@ -1,8 +1,6 @@
-import json
-
 import awkward as ak
 import numpy as np
-from coffea.lookup_tools import rochester_lookup, txt_converters
+from spritz.lookup_tools import rochester_lookup, txt_converters
 
 
 def getRochester(cfg):

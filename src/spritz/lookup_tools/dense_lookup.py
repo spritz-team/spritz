@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 import numpy
-from spritz.lookup.lookup_base import lookup_base
+from spritz.lookup_tools.lookup_base import lookup_base
 
 
 class dense_lookup(lookup_base):

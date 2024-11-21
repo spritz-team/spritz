@@ -1,7 +1,9 @@
+import glob
 import json
 import os
 import sys
 
+import uproot
 from dbs.apis.dbsClient import DbsApi
 from spritz.framework.framework import get_analysis_dict, get_fw_path
 from spritz.utils import rucio_utils
@@ -23,7 +25,18 @@ def get_files(era, active_samples):
 
     files = {}
     for sampleName in Samples:
-        files[sampleName] = {"query": Samples[sampleName]["nanoAOD"], "files": []}
+        if "nanoAOD" in Samples[sampleName]:
+            files[sampleName] = {"query": Samples[sampleName]["nanoAOD"], "files": []}
+        elif "path" in Samples[sampleName]:
+            files[sampleName] = {"files": []}
+            found_files = glob.glob(Samples[sampleName]["path"])
+            print(found_files)
+            for found_file in found_files:
+                f = uproot.open(found_file)
+                nevents = f["Events"].num_entries
+                files[sampleName]["files"].append(
+                    {"path": [found_file], "nevents": nevents}
+                )
 
     return files
 
@@ -38,6 +51,8 @@ def main():
     # DE|FR|IT|BE|CH|ES|UK
     good_sites = ["IT", "FR", "BE", "CH", "UK", "ES", "DE", "US"]
     for dname in files:
+        if "query" not in files[dname]:
+            continue
         dataset = files[dname]["query"]
         print("Checking", dname, "files with query", dataset)
         try:

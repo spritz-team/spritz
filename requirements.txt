@@ -1,6 +1,7 @@
 # using python3.10
 uproot
 awkward
+dask-awkward
 numpy
 vector
 pandas
@@ -14,4 +15,4 @@ requests
 cloudpickle
 dbs3-client
 rucio-clients
-dask==2024.5.1 # just for coffea...
+numba

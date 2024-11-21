@@ -1,12 +1,12 @@
 import awkward
 import dask_awkward as dak
 import numpy
-from spritz.lookup.dense_lookup import dense_lookup
+from spritz.lookup_tools.dense_lookup import dense_lookup
 
 # crystalball is single sided, local reimplementation of double-sided here until
 # the PR can be merged
 # from scipy.stats import crystalball
-from spritz.lookup.doublecrystalball import doublecrystalball
+from spritz.lookup_tools.doublecrystalball import doublecrystalball
 
 
 class rochester_lookup:

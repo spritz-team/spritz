@@ -28,6 +28,7 @@ spritz-merge = "spritz.scripts.merge:main"
 spritz-postproc = "spritz.scripts.post_process:main"
 spritz-plot = "spritz.scripts.plot:main"
 spritz-cards = "spritz.scripts.make_cards:main"
+spritz-plot-eft = "spritz.scripts.plot_eft:main"
 
 [tool.ruff]
 src = ["src/spritz"]
