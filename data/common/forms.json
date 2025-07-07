@@ -7,10 +7,17 @@
                 "phi",
                 "mass",
                 "jetId",
-                "puId",
+                "puIdDisc",
                 "rawFactor",
                 "area",
-                "btagDeepFlavB"
+                "btagUParTAK4B",
+                "chHEF",
+                "neHEF",
+                "chEmEF",
+                "neEmEF",
+                "muEF",
+                "chMultiplicity",
+                "neMultiplicity"
             ],
             "with_name": "Momentum4D"
         },
@@ -27,7 +34,7 @@
                 "eta",
                 "phi",
                 "pdgId",
-                "mvaFall17V2Iso_WP90",
+                "mvaIso_WP90",
                 "convVeto",
                 "pfRelIso03_all",
                 "cutBased",
@@ -46,6 +53,7 @@
                 "pdgId",
                 "tightId",
                 "pfRelIso04_all",
+                "pfIsoId",
                 "dxy",
                 "dz"
             ],
@@ -54,14 +62,6 @@
         "PV": {
             "branches": [
                 "npvsGood"
-            ],
-            "with_name": null
-        },
-        "L1PreFiringWeight": {
-            "branches": [
-                "Nom",
-                "Up",
-                "Dn"
             ],
             "with_name": null
         },
@@ -86,12 +86,19 @@
                 "phi",
                 "mass",
                 "jetId",
-                "puId",
+                "puIdDisc",
                 "genJetIdx",
                 "rawFactor",
                 "area",
-                "btagDeepFlavB",
-                "hadronFlavour"
+                "hadronFlavour",
+                "btagUParTAK4B",
+                "chHEF",
+                "neHEF",
+                "chEmEF",
+                "neEmEF",
+                "muEF",
+                "chMultiplicity",
+                "neMultiplicity"
             ],
             "with_name": "Momentum4D"
         },
@@ -154,7 +161,7 @@
                 "eta",
                 "phi",
                 "pdgId",
-                "mvaFall17V2Iso_WP90",
+                "mvaIso_WP90",
                 "convVeto",
                 "pfRelIso03_all",
                 "cutBased",
@@ -175,6 +182,7 @@
                 "nTrackerLayers",
                 "tightId",
                 "pfRelIso04_all",
+                "pfIsoId",
                 "dxy",
                 "dz"
             ],
@@ -183,14 +191,6 @@
         "PV": {
             "branches": [
                 "npvsGood"
-            ],
-            "with_name": null
-        },
-        "L1PreFiringWeight": {
-            "branches": [
-                "Nom",
-                "Up",
-                "Dn"
             ],
             "with_name": null
         },

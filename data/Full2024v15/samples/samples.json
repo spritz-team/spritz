@@ -1,0 +1,146 @@
+{
+  "headers": [],
+  "samples": {
+    "MuonEG_Run2024C-ReReco-v1": {
+      "nanoAOD": "/MuonEG/Run2024C-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "MuonEG_Run2024D-ReReco-v1": {
+      "nanoAOD": "/MuonEG/Run2024D-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "MuonEG_Run2024E-ReReco-v1": {
+      "nanoAOD": "/MuonEG/Run2024E-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "MuonEG_Run2024F-Prompt-v1": {
+      "nanoAOD": "/MuonEG/Run2024F-MINIv6NANOv15-v2/NANOAOD"
+    },
+    "MuonEG_Run2024G-Prompt-v1": {
+      "nanoAOD": "/MuonEG/Run2024G-MINIv6NANOv15-v3/NANOAOD"
+    },
+    "MuonEG_Run2024H-Prompt-v1": {
+      "nanoAOD": "/MuonEG/Run2024H-MINIv6NANOv15-v2/NANOAOD"
+    },
+    "MuonEG_Run2024I-Prompt-v1": {
+      "nanoAOD": "/MuonEG/Run2024I-MINIv6NANOv15-v2/NANOAOD"
+    },
+    "Muon0_Run2024C-ReReco-v1": {
+      "nanoAOD": "/Muon0/Run2024C-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon0_Run2024D-ReReco-v1": {
+      "nanoAOD": "/Muon0/Run2024D-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon0_Run2024E-ReReco-v1": {
+      "nanoAOD": "/Muon0/Run2024E-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon0_Run2024F-Prompt-v1": {
+      "nanoAOD": "/Muon0/Run2024F-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon0_Run2024G-Prompt-v1": {
+      "nanoAOD": "/Muon0/Run2024G-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon0_Run2024H-Prompt-v1": {
+      "nanoAOD": "/Muon0/Run2024H-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon0_Run2024I-Prompt-v1": {
+      "nanoAOD": "/Muon0/Run2024I-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon1_Run2024C-ReReco-v1": {
+      "nanoAOD": "/Muon1/Run2024C-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon1_Run2024D-ReReco-v1": {
+      "nanoAOD": "/Muon1/Run2024D-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon1_Run2024E-ReReco-v1": {
+      "nanoAOD": "/Muon1/Run2024E-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon1_Run2024F-Prompt-v1": {
+      "nanoAOD": "/Muon1/Run2024F-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "Muon1_Run2024G-Prompt-v1": {
+      "nanoAOD": "/Muon1/Run2024G-MINIv6NANOv15-v2/NANOAOD"
+    },
+    "Muon1_Run2024H-Prompt-v1": {
+      "nanoAOD": "/Muon1/Run2024H-MINIv6NANOv15-v2/NANOAOD"
+    },
+    "Muon1_Run2024I-Prompt-v1": {
+      "nanoAOD": "/Muon1/Run2024I-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma0_Run2024C-ReReco-v1": {
+      "nanoAOD": "/EGamma0/Run2024C-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma0_Run2024D-ReReco-v1": {
+      "nanoAOD": "/EGamma0/Run2024D-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma0_Run2024E-ReReco-v1": {
+      "nanoAOD": "/EGamma0/Run2024E-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma0_Run2024F-Prompt-v1": {
+      "nanoAOD": "/EGamma0/Run2024F-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma0_Run2024G-Prompt-v1": {
+      "nanoAOD": "/EGamma0/Run2024G-MINIv6NANOv15-v2/NANOAOD"
+    },
+    "EGamma0_Run2024H-Prompt-v1": {
+      "nanoAOD": "/EGamma0/Run2024H-MINIv6NANOv15-v2/NANOAOD"
+    },
+    "EGamma0_Run2024I-Prompt-v1": {
+      "nanoAOD": "/EGamma0/Run2024I-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma1_Run2024C-ReReco-v1": {
+      "nanoAOD": "/EGamma1/Run2024C-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma1_Run2024D-ReReco-v1": {
+      "nanoAOD": "/EGamma1/Run2024D-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma1_Run2024E-ReReco-v1": {
+      "nanoAOD": "/EGamma1/Run2024E-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma1_Run2024F-Prompt-v1": {
+      "nanoAOD": "/EGamma1/Run2024F-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma1_Run2024G-Prompt-v1": {
+      "nanoAOD": "/EGamma1/Run2024G-MINIv6NANOv15-v2/NANOAOD"
+    },
+    "EGamma1_Run2024H-Prompt-v1": {
+      "nanoAOD": "/EGamma1/Run2024H-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "EGamma1_Run2024I-Prompt-v1": {
+      "nanoAOD": "/EGamma1/Run2024I-MINIv6NANOv15-v1/NANOAOD"
+    },
+    "DYto2E-2Jets_MLL-50": {
+      "nanoAOD": "/DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v4/NANOAODSIM",
+      "xsec": "2091.7",
+      "kfac": "kfact=1.000",
+      "ref": "ref=A"
+    },
+    "DYto2Mu-2Jets_MLL-50": {
+      "nanoAOD": "/DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v6/NANOAODSIM",
+      "xsec": "2091.7",
+      "kfac": "kfact=1.000",
+      "ref": "ref=A"
+    },
+    "DYto2Tau-2Jets_MLL-50": {
+      "nanoAOD": "/DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v5/NANOAODSIM",
+      "xsec": "2091.7",
+      "kfac": "kfact=1.000",
+      "ref": "ref=A"
+    },
+    "TTTo2L2Nu": {
+      "nanoAOD": "/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v3/NANOAODSIM",
+      "xsec": "0.950*923.6*0.1086*0.1086*9",
+      "kfac": "kfact=1.000",
+      "ref": "ref=Guillelmo"
+    },
+    "TWplusto2L2Nu": {
+      "nanoAOD": "/TWplusto2L2Nu-DS_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
+      "xsec": "4.67",
+      "kfac": "kfact=1.000",
+      "ref": "ref=Guillelmo"
+    },
+    "TWminusto2L2Nu": {
+      "nanoAOD": "/TWminusto2L2Nu-DS_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
+      "xsec": "4.67",
+      "kfac": "kfact=1.000",
+      "ref": "ref=Guillelmo"
+    }
+  }
+}

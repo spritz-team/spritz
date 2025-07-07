@@ -16,7 +16,9 @@ def jet_veto(events, cfg):
     key = cfg["jme"]["jet_veto_tag"]
     jet_phi = events.Jet.phi
     jet_eta = events.Jet.eta
-    jet_veto = cset[key].evaluate("jetvetomap", jet_eta, jet_phi)
+    jet_veto = ak.zeros_like(events.Jet.phi)
+    for _key in cfg["jme"]["jet_veto_keys"]:
+        jet_veto = jet_veto + cset[key].evaluate(_key, jet_eta, jet_phi)
     events["Jet"] = filter_collection(events.Jet, jet_veto == 0)
     return events
 

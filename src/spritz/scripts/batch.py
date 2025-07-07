@@ -15,7 +15,6 @@ from spritz.framework.framework import (
 def preprocess_chunks(year):
     with open(f"{get_fw_path()}/data/common/forms.json", "r") as file:
         forms_common = json.load(file)
-        print(forms_common)
     with open(f"{get_fw_path()}/data/{year}/forms.json", "r") as file:
         forms_era = json.load(file)
     forms = add_dict(forms_common, forms_era)

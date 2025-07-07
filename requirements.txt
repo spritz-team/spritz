@@ -9,6 +9,7 @@ correctionlib git@github.com:giorgiopizz/correctionlib
 onnxruntime
 hist
 matplotlib
+mplhep
 xrootd
 fsspec-xrootd
 requests

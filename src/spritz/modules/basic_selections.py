@@ -1,4 +1,5 @@
 import json
+import sys
 
 import awkward as ak
 import fsspec
@@ -7,15 +8,17 @@ import numpy
 from data.common.TrigMaker_cfg import Trigger
 from numba import types
 from numba.typed import Dict
+import numpy as np
 
 
 def pass_trigger(events, year):
-    keys = ["SingleEle", "DoubleEle", "SingleMu", "DoubleMu"]
+    keys = ["EleMu", "SingleEle", "DoubleEle", "SingleMu", "DoubleMu"]
     for key in keys:
         events[key] = ak.ones_like(events.weight) == 0.0  # all False
 
     # since each era might have a different trigger we loop on them and look for events
     # that pass an era cut (e.g. event is of era "B") and apply those cuts
+    print('run periods', np.unique(events.run_period))
 
     for era in Trigger[year]:
         for key in keys:
@@ -26,6 +29,7 @@ def pass_trigger(events, year):
                 try:
                     events.HLT[val[len("HLT_") :]]
                 except ak.errors.FieldNotFoundError:
+                    print('trigger not found', val[len("HLT_") :], file=sys.stderr)
                     events[("HLT", val[len("HLT_") :])] = (
                         ak.ones_like(events.weight) != 1.0
                     )

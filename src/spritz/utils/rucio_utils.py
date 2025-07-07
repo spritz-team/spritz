@@ -136,6 +136,7 @@ def get_dataset_files_replicas(
     mode="full",
     partial_allowed=False,
     client=None,
+    xrootd_sites_map=None,
     scope="cms",
 ):
     """
@@ -181,7 +182,9 @@ def get_dataset_files_replicas(
            Metadata counting the coverage of the dataset by site
 
     """
-    sites_xrootd_prefix = get_xrootd_sites_map()
+    sites_xrootd_prefix = (
+        xrootd_sites_map if xrootd_sites_map else get_xrootd_sites_map()
+    )
     client = client if client else get_rucio_client()
     outsites = []
     outfiles = []

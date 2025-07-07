@@ -59,7 +59,8 @@ def create_chunks(datasets):
                 }
 
                 chunks_dataset.append(d)
-        if not is_data and max_chunks:
+        # if not is_data and max_chunks:
+        if max_chunks:
             chunks_dataset = chunks_dataset[:max_chunks]
         chunks.extend(chunks_dataset)
     return chunks

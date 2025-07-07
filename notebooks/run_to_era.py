@@ -9,11 +9,15 @@ import gzip
 
 ERA = "Full2018v9"
 
+# for ERA, year in [
+#     ("Full2018v9", "2018"),
+#     ("Full2017v9", "2017"),
+#     ("Full2016v9HIPM", "2016preVFP"),
+#     ("Full2016v9noHIPM", "2016postVFP"),
+# ]:
+
 for ERA, year in [
-    ("Full2018v9", "2018"),
-    ("Full2017v9", "2017"),
-    ("Full2016v9HIPM", "2016preVFP"),
-    ("Full2016v9noHIPM", "2016postVFP"),
+    ("Full2024v15", "2024"),
 ]:
     run_ranges = {}
     for era in Trigger[ERA]:

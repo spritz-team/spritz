@@ -42,6 +42,8 @@ def plot(
     year_label,
     blind,
     variable_label=None,
+    fit_scales={},
+    is_log=True,
 ):
     print("Doing ", region, variable)
 
@@ -50,6 +52,7 @@ def plot(
     dummy_histo = 0
     axis = 0
     hmin = 1e7
+    plot_nuisances = ["stat"]
     for sample in samples:
         h = directory[f"histo_{sample}"].to_hist()
         if isinstance(axis, int):
@@ -58,12 +61,15 @@ def plot(
             dummy_histo = np.zeros_like(h.values())
         histos[sample] = {}
         histo = histos[sample]
-        histo["nom"] = h.values()
+        fit_scale = fit_scales.get(sample, 1.0)
+        histo["nom"] = h.values() * fit_scale
         hmin = min(hmin, np.min(histo["nom"]))
-        stat = np.sqrt(h.variances())
+        stat = np.sqrt(h.variances()) * fit_scale
         histo["stat_up"] = h.values() + stat
         histo["stat_down"] = h.values() - stat
         for nuisance in nuisances:
+            if nuisances[nuisance]["type"] == "removeStat":
+                continue
             if nuisances[nuisance]["type"] == "rateParam":
                 continue
             if nuisances[nuisance]["type"] == "auto":
@@ -71,6 +77,7 @@ def plot(
             if nuisances[nuisance]["type"] == "stat":
                 continue
             name = nuisances[nuisance]["name"]
+            plot_nuisances.append(nuisance)
 
             if sample not in nuisances[nuisance]["samples"]:
                 histo[f"{nuisance}_up"] = h.values().copy()
@@ -83,11 +90,13 @@ def plot(
                 histo[f"{nuisance}_down"] = 1.0 / scaling * h.values()
             else:
                 histo[f"{nuisance}_up"] = (
-                    directory[f"histo_{sample}_{name}Up"].values().copy()
+                    directory[f"histo_{sample}_{name}Up"].values().copy() * fit_scale
                 )
                 histo[f"{nuisance}_down"] = (
-                    directory[f"histo_{sample}_{name}Down"].values().copy()
+                    directory[f"histo_{sample}_{name}Down"].values().copy() * fit_scale
                 )
+    plot_nuisances = list(set(plot_nuisances))
+
     hlast = dummy_histo.copy()
     hlast_bkg = dummy_histo.copy()
     v_syst_bkg = {
@@ -95,12 +104,17 @@ def plot(
             "up": dummy_histo.copy(),
             "down": dummy_histo.copy(),
         }
-        for syst in nuisances
+        for syst in plot_nuisances
     }
+    # print(plot_nuisances)
 
     for histoName in histos:
         is_signal = samples[histoName].get("is_signal", False)
-        if samples[histoName].get("is_data", False):
+        if not samples[histoName].get("plot_stacked", True):
+            continue
+        if samples[histoName].get("is_data", False) or samples[histoName].get(
+            "is_fake_data", False
+        ):
             continue
         if is_signal:
             hlast += histos[histoName]["nom"].copy()
@@ -108,7 +122,7 @@ def plot(
             hlast += histos[histoName]["nom"].copy()
             hlast_bkg += histos[histoName]["nom"].copy()
 
-        for vname in nuisances:
+        for vname in plot_nuisances:
             if sample not in nuisances[vname]["samples"]:
                 v_syst_bkg[vname]["up"] += histos[histoName]["nom"].copy()
                 v_syst_bkg[vname]["down"] += histos[histoName]["nom"].copy()
@@ -125,10 +139,36 @@ def plot(
     vvar_do = np.sqrt(vvar_do)
     hlast = np.where(hlast >= 1e-6, hlast, 1e-6)
     hlast_bkg = np.where(hlast_bkg >= 1e-6, hlast_bkg, 1e-6)
+    # print(vvar_do)
 
     signal_tot = hlast - hlast_bkg
     significance = signal_tot / hlast_bkg
     blind_mask = significance > 0.10
+
+    # asimov or real data?
+    data_key = ""
+    for histoName in histos:
+        if samples[histoName].get("is_data", False) or samples[histoName].get(
+            "is_fake_data", False
+        ):
+            data_key = histoName
+            break
+
+    if data_key == "":
+        ydata = hlast.copy()
+        ydata_up = ydata + np.sqrt(ydata)
+        ydata_down = ydata - np.sqrt(ydata)
+    else:
+        ydata = histos[data_key]["nom"].copy()
+        ydata_up = histos[data_key]["stat_up"].copy()
+        ydata_down = histos[data_key]["stat_up"].copy()
+    if blind:
+        y_blind = np.zeros_like(ydata)
+        yup_blind = np.zeros_like(ydata)
+        ydown_blind = np.zeros_like(ydata)
+        ydata = np.where(blind_mask, y_blind, ydata)
+        ydata_up = np.where(blind_mask, yup_blind, ydata_up)
+        ydata_down = np.where(blind_mask, ydown_blind, ydata_down)
 
     x = axis.centers
     edges = axis.edges
@@ -144,22 +184,17 @@ def plot(
     # for i, histoName in enumerate(["Top", "DY", "Zjj", "Data"]):
     for i, histoName in enumerate(histos.keys()):
         is_signal = samples[histoName].get("is_signal", False)
+        plot_stacked = samples[histoName].get("plot_stacked", True)
         y = histos[histoName]["nom"].copy()
         integral = round(np.sum(y), 2)
-        if samples[histoName].get("is_data", False):
-            yup = histos[histoName]["stat_up"] - y
-            ydown = y - histos[histoName]["stat_down"]
-            if blind:
-                y_blind = np.zeros_like(y)
-                yup_blind = np.zeros_like(y)
-                ydown_blind = np.zeros_like(y)
-                y = np.where(blind_mask, y_blind, y)
-                yup = np.where(blind_mask, yup_blind, yup)
-                ydown = np.where(blind_mask, ydown_blind, ydown)
+        label = histoName + f" [{integral}]"
+        if samples[histoName].get("is_data", False) or samples[histoName].get(
+            "is_fake_data", False
+        ):
             ax[0].errorbar(
                 x,
-                y,
-                yerr=(ydown, yup),
+                ydata,
+                yerr=(np.sqrt(ydata), np.sqrt(ydata)),
                 fmt="ko",
                 markersize=4,
                 label="Data" + f" [{integral}]",
@@ -168,7 +203,10 @@ def plot(
             continue
         color = colors[histoName]
         if is_signal:
-            ax[0].stairs(y, edges, zorder=10, linewidth=2, color=color)
+            _label = label if not plot_stacked else None
+            ax[0].stairs(y, edges, zorder=10, linewidth=2, color=color, label=_label)
+            if not plot_stacked:
+                continue
 
         if isinstance(tmp_sum, int):
             tmp_sum = y.copy()
@@ -179,7 +217,7 @@ def plot(
         ax[0].stairs(
             tmp_sum,
             edges,
-            label=histoName + f" [{integral}]",
+            label=label,
             fill=True,
             zorder=-i,
             color=color,
@@ -203,15 +241,21 @@ def plot(
     ax[0].stairs(
         hlast, edges, label=f"Tot MC [{integral}]", color="darkgrey", linewidth=1
     )
-    ax[0].set_yscale("log")
     ax[0].legend(
         loc="upper center",
         frameon=True,
         ncols=3,
         framealpha=0.8,
-        fontsize=8,
+        fontsize=6,
     )
-    ax[0].set_ylim(max(0.5, hmin) * 1e-2, np.max(hlast) * 1e2)
+
+    if is_log:
+        ax[0].set_yscale("log")
+        ax[0].set_ylim(max(0.5, hmin), np.max(hlast) * 5e3)  # FIXME remove comment
+    else:
+        ax[0].set_ylim(
+            None, np.max(hlast) + (np.max(hlast) - hmin)
+        )  # FIXME remove comment
 
     ratio_err_up = vvar_up / hlast
     ratio_err_down = vvar_do / hlast
@@ -223,18 +267,22 @@ def plot(
         color="lightgray",
     )
 
-    # Blind all signal region
-    if blind:
-        ydata_blind = np.zeros_like(hlast_bkg)
-        ydata_up_blind = np.zeros_like(hlast_bkg)
-        ydata_down_blind = np.zeros_like(hlast_bkg)
-        ydata = np.where(blind_mask, ydata_blind, ydata)
-        ydata_up = np.where(blind_mask, ydata_up_blind, ydata_up)
-        ydata_down = np.where(blind_mask, ydata_down_blind, ydata_down)
+    # # Blind all signal region
+    # if blind:
+    #     ydata_blind = np.zeros_like(hlast_bkg)
+    #     ydata_up_blind = np.zeros_like(hlast_bkg)
+    #     ydata_down_blind = np.zeros_like(hlast_bkg)
+    #     ydata = np.where(blind_mask, ydata_blind, ydata)
+    #     ydata_up = np.where(blind_mask, ydata_up_blind, ydata_up)
+    #     ydata_down = np.where(blind_mask, ydata_down_blind, ydata_down)
 
     ratio = ydata / hlast
-    ratio_data_up = ydata_up / hlast
-    ratio_data_down = ydata_down / hlast
+    # if variable == "ptll":
+    #     print(ratio)
+    ratio_data_up = abs(ydata_up / hlast - ratio)
+    ratio_data_down = abs(ydata_down / hlast - ratio)
+    # print(ratio)
+    # print((ydata_down - ydata) / hlast)
     ax[1].errorbar(
         x,
         ratio,
@@ -253,8 +301,9 @@ def plot(
     else:
         ax[1].set_xlabel(variable)
     # print('time before fig save', time.time()-start)
+    _name = "log" if is_log else "lin"
     fig.savefig(
-        f"plots/{region}_{variable}.png",
+        f"plots/{_name}_{region}_{variable}.png",
         facecolor="white",
         pad_inches=0.1,
         bbox_inches="tight",
@@ -290,16 +339,39 @@ def main():
         "samples": dict((skey, "1.00") for skey in samples),
     }
 
+    fit_scales = {}
+
     cpus = 10
+
+    # good_variables = [
+    #     "dnn",
+    #     # "ptll_unfold",
+    #     # "mjj_unfold",
+    #     # "dphijj_unfold",
+    #     # "dphill_unfold",
+    #     # "ptjj_unfold",
+    #     # "detajj_unfold",
+    #     # "ptj3_unfold",
+    #     # "add_HT_unfold",
+    # ]
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=cpus) as executor:
         tasks = []
 
         input_file = uproot.open("histos.root")
         for region in regions:
+            # if region != "sr_inc_ee":
+            #     continue
             for variable in variables:
                 if "axis" not in variables[variable]:
                     continue
+                # if variable not in good_variables:
+                #     continue
+                # if variable != "dphijj_reverse_flat_dnn" or "sr" not in region:
+                # if variable != "dnn" or "sr" not in region:
+                #     continue
+
+                print("submitting", region, variable)
                 tasks.append(
                     executor.submit(
                         plot,
@@ -313,8 +385,30 @@ def main():
                         year_label,
                         blind,
                         variables[variable].get("label"),
+                        fit_scales,
+                        True,
                     )
                 )
+
+                # # lin
+                # tasks.append(
+                #     executor.submit(
+                #         plot,
+                #         input_file,
+                #         region,
+                #         variable,
+                #         samples,
+                #         nuisances,
+                #         lumi,
+                #         colors,
+                #         year_label,
+                #         blind,
+                #         variables[variable].get("label"),
+                #         fit_scales,
+                #         False,
+                #     )
+                # )
+
         concurrent.futures.wait(tasks)
         for task in tasks:
             task.result()

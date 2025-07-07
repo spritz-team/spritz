@@ -1,0 +1,47 @@
+{
+  "flags": [
+    "goodVertices",
+    "globalSuperTightHalo2016Filter",
+    "EcalDeadCellTriggerPrimitiveFilter",
+    "hfNoisyHitsFilter",
+    "BadPFMuonFilter",
+    "BadPFMuonDzFilter",
+    "eeBadScFilter",
+    "ecalBadCalibFilter"
+  ],
+  "era": "Full2024v15",
+  "year": "2024",
+  "jet_sel": {
+    "jetId": 2,
+    "minpt": 15,
+    "maxeta": 4.9
+  },
+  "leptonsWP": {
+    "eleWP": "mvaWinter22V2Iso_WP90",
+    "muWP": "cut_Tight_HWWW"
+  },
+  "bTag": {
+    "btagLoose": 0.0246,
+    "btagMedium": 0.1272,
+    "btagTight": 0.4648
+  },
+  "lumiMask": "RPLME_PATH_FW/data/Full2024v15/lumimask/Cert_Collisions2024_378981_386951_Golden.json",
+  "run_to_era": "RPLME_PATH_FW/data/Full2024v15/clib/run_to_era.json.gz",
+  "puWeights": "RPLME_PATH_FW/data/Full2024v15/clib/puWeights.json.gz",
+  "puWeightsKey": "Collisions2023_369803_370790_eraD_GoldenJson",
+  "jetId": "RPLME_PATH_FW/data/Full2024v15/clib/jetid.json.gz",
+  "jetvetomaps": "RPLME_PATH_FW/data/Full2024v15/clib/jetvetomaps.json.gz",
+  "jme": {
+    "jet_veto_tag": "Winter24Prompt2024BCDEFGHI_V1",
+    "jet_veto_keys": [
+      "jetvetomap",
+      "jetvetomap_bpix"
+    ],
+    "jet_algo": "AK4PFPuppi",
+    "lvl_compound": "L1L2L3Res",
+    "jer_tag": "Summer19UL18_JRV2_MC",
+    "jec_tag": {
+      "mc": "Winter24Prompt24_V3_MC"
+    }
+  }
+}
